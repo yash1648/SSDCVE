@@ -12,6 +12,45 @@ React + Vite
 └── Admin (Dashboard, Issuer Verification, User Management)
 ```
 
+```mermaid
+flowchart TB
+
+    APP["React + Vite"]
+
+    APP --> AUTH["Authentication"]
+
+    AUTH --> AUTH_CTX["AuthContext"]
+    AUTH --> GUARDS["RequireAuth + RequireRole"]
+
+    APP --> API["API Layer<br/>Axios"]
+
+    APP --> ISSUER["Issuer"]
+
+    ISSUER --> I1["Dashboard"]
+    ISSUER --> I2["Issue Credential"]
+    ISSUER --> I3["Credential List"]
+    ISSUER --> I4["Revoke Credential"]
+
+    APP --> HOLDER["Holder"]
+
+    HOLDER --> H1["Wallet"]
+    HOLDER --> H2["View Credential"]
+    HOLDER --> H3["Download"]
+    HOLDER --> H4["Share / QR"]
+
+    APP --> VERIFIER["Verifier"]
+
+    VERIFIER --> V1["Upload"]
+    VERIFIER --> V2["Verification Result"]
+    VERIFIER --> V3["History"]
+
+    APP --> ADMIN["Admin"]
+
+    ADMIN --> A1["Dashboard"]
+    ADMIN --> A2["Issuer Verification"]
+    ADMIN --> A3["User Management"]
+```
+
 ## Routing
 
 ```jsx
@@ -59,6 +98,36 @@ Select student
 Frontend gets subjectId
   ↓
 POST /api/issuer/credentials
+```
+
+### Issuer Form Diagram
+
+```mermaid
+flowchart LR
+
+    A["Issuer enters<br/>email / name"]
+    --> B["Search Students"]
+
+    B
+    --> C["GET /api/issuer/students<br/>?search=..."]
+
+    C
+    --> D["Display Matching Students"]
+
+    D
+    --> E["Issuer Selects Student"]
+
+    E
+    --> F["Retrieve subjectId"]
+
+    F
+    --> G["Fill Credential Details"]
+
+    G
+    --> H["POST /api/issuer/credentials"]
+
+    H
+    --> I["Credential Issued"]
 ```
 
 ### Verifier Result Card — three-check security story

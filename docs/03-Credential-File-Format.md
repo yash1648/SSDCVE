@@ -41,8 +41,29 @@
 
 ## Hash & Sign Pipeline
 
-```
-Canonical payload → UTF-8 bytes → SHA-256 → contentHash → Ed25519(contentHash) → signature → envelope → IPFS → CID → PostgreSQL
+```mermaid
+flowchart LR
+
+    A["Canonical Credential Payload"]
+    --> B["Deterministic UTF-8 Bytes"]
+
+    B --> C["SHA-256"]
+
+    C --> D["contentHash"]
+
+    D --> E["Ed25519 Sign"]
+
+    E --> F["Base64 Signature"]
+
+    D --> G["Signed Envelope"]
+    F --> G
+
+    G --> H["Store in Local IPFS"]
+
+    H --> I["CID"]
+
+    G --> J[("PostgreSQL")]
+    I --> J
 ```
 
 ## Why Two Representations (no circular hash)

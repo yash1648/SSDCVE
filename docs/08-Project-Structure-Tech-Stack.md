@@ -124,11 +124,21 @@ SSDCVE/
 
 ## Infrastructure
 
-```
-docker-compose.yml
-├── postgres (PostgreSQL 16)
-├── ipfs (ipfs/kubo:<pinned-version> — NOT latest)
-└── backend (Spring Boot, optional container)
+```mermaid
+flowchart TB
+
+    DC["docker-compose.yml"]
+
+    DC --> PG["PostgreSQL 16"]
+    DC --> IPFS["IPFS / Kubo<br/>Pinned Version"]
+
+    DC --> BE["Spring Boot Backend<br/>(Optional Container)"]
+
+    BE --> PG
+    BE --> IPFS
+
+    FRONT["React + Vite<br/>Development Server"]
+    FRONT --> BE
 ```
 
 - **Dev:** React/Vite → Spring Boot local → PostgreSQL container → IPFS/Kubo container

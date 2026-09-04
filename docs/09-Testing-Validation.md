@@ -2,12 +2,19 @@
 
 ## Testing Strategy
 
-```
-Unit Tests
-    ↓
-Integration Tests
-    ↓
-E2E Tests
+```mermaid
+flowchart LR
+
+    UNIT["Unit Tests"]
+    --> INTEGRATION["Integration Tests"]
+    --> E2E["End-to-End Tests"]
+
+    TC["Testcontainers"]
+
+    TC -.->|"Provides test infrastructure"| INTEGRATION
+
+    TC --> PG["PostgreSQL"]
+    TC --> IPFS["IPFS / Kubo"]
 ```
 
 **Testcontainers** is the infrastructure mechanism (PostgreSQL + IPFS/Kubo) supporting integration/E2E tests — not a separate layer.
@@ -71,6 +78,32 @@ E2E Tests
 
 ## Core Verification Suite
 
+```mermaid
+flowchart TD
+
+    VERIFY["Verification Engine"]
+
+    VERIFY --> VALID["VALID"]
+    VERIFY --> TAMPERED["TAMPERED"]
+    VERIFY --> REVOKED["REVOKED"]
+    VERIFY --> EXPIRED["EXPIRED"]
+    VERIFY --> NOT_FOUND["NOT_FOUND"]
+    VERIFY --> UNAVAILABLE["UNAVAILABLE"]
+
+    TAMPERED --> T1["Payload Modified"]
+    TAMPERED --> T2["Envelope Hash Mismatch"]
+    TAMPERED --> T3["Database Hash Mismatch"]
+    TAMPERED --> T4["Invalid Signature"]
+
+    REVOKED --> R1["Revoked Credential"]
+
+    EXPIRED --> E1["Expired Credential"]
+
+    NOT_FOUND --> N1["Unknown Credential / Key"]
+
+    UNAVAILABLE --> U1["IPFS Unavailable"]
+```
+
 ```
 verify_validCredential_returnsValid()
 verify_tamperedPayload_returnsTampered()
@@ -120,6 +153,32 @@ verify_expiredAndTamperedCredential_returnsTampered()   // TAMPERED, not EXPIRED
 
 ## End-to-End Validation
 
+```mermaid
+flowchart LR
+
+    A["Issue Credential"]
+    --> B["Credential Created"]
+
+    B --> C["Store in IPFS"]
+
+    C --> D["CID Generated"]
+
+    D --> E["Store Metadata in PostgreSQL"]
+
+    E --> F["Holder Receives Credential"]
+
+    F --> G["Verifier Uploads Credential"]
+
+    G --> H["Verification → VALID"]
+
+    H --> I["Issuer Revokes Credential"]
+
+    I --> J["Verifier Checks Again"]
+
+    J --> K["Verification → REVOKED"]
+```
+
+
 ```
 Issue → Credential created → IPFS CID generated → DB record created
   → Holder receives credential
@@ -129,8 +188,45 @@ Issue → Credential created → IPFS CID generated → DB record created
 ```
 
 Tampering branch:
+
+```mermaid
+flowchart LR
+
+    A["Valid Credential"]
+    --> B["Modify Claim"]
+
+    B --> C["Verifier Uploads Credential"]
+
+    C --> D["Canonicalize + SHA-256"]
+
+    D --> E{"Hash Match?"}
+
+    E -->|No| F["TAMPERED"]
+```
+
 ```
 Issue → Modify claim → Verify → TAMPERED
+```
+
+Revoke branch:
+
+```mermaid
+flowchart TD
+
+    A["Credential"]
+    --> B["Credential Modified"]
+
+    B --> C["Cryptographic Verification"]
+
+    C --> D{"Integrity / Signature Valid?"}
+
+    D -->|No| E["TAMPERED"]
+
+    D -->|Yes| F{"Revoked?"}
+
+    F -->|Yes| G["REVOKED"]
+
+    NOTE["Tampered + Revoked<br/>→ TAMPERED"]
 ```
 
 ## Milestone Validation Checklist

@@ -2,12 +2,91 @@
 
 ## Entity Relationship
 
-```
-USER
- ├── ISSUER ── CREDENTIAL ── CREDENTIAL_STATUS
- │                 ├── IPFS (CID)
- │                 └── VERIFICATION_RECORDS
- └── HOLDER ── HOLDER_WALLET
+```mermaid
+erDiagram
+
+    USERS ||--o| ISSUERS : "has"
+    USERS ||--o{ CREDENTIALS : "owns"
+    USERS ||--o{ HOLDER_WALLET : "stores"
+    USERS ||--o{ VERIFICATION_RECORDS : "performs"
+
+    ISSUERS ||--o{ ISSUER_KEYS : "owns"
+    ISSUERS ||--o{ CREDENTIALS : "issues"
+
+    CREDENTIALS ||--|| CREDENTIAL_STATUS : "has"
+    CREDENTIALS ||--o{ HOLDER_WALLET : "stored_in"
+    CREDENTIALS ||--o{ VERIFICATION_RECORDS : "verified"
+
+    USERS {
+        UUID id PK
+        VARCHAR email UK
+        VARCHAR password_hash
+        VARCHAR full_name
+        VARCHAR role
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    ISSUERS {
+        UUID id PK
+        UUID user_id FK
+        VARCHAR name
+        VARCHAR domain
+        BOOLEAN verified
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    ISSUER_KEYS {
+        UUID id PK
+        UUID issuer_id FK
+        VARCHAR key_id UK
+        TEXT public_key
+        VARCHAR algorithm
+        BOOLEAN active
+        TIMESTAMP created_at
+        TIMESTAMP revoked_at
+    }
+
+    CREDENTIALS {
+        UUID id PK
+        VARCHAR credential_number UK
+        UUID issuer_id FK
+        UUID subject_id FK
+        VARCHAR type
+        VARCHAR title
+        VARCHAR content_hash
+        VARCHAR ipfs_cid
+        TEXT signature
+        VARCHAR signature_algorithm
+        JSONB metadata_json
+        TIMESTAMP issued_at
+        TIMESTAMP expires_at
+    }
+
+    CREDENTIAL_STATUS {
+        UUID id PK
+        UUID credential_id FK
+        VARCHAR status
+        TIMESTAMP revoked_at
+        TEXT reason
+    }
+
+    HOLDER_WALLET {
+        UUID id PK
+        UUID user_id FK
+        UUID credential_id FK
+        TIMESTAMP stored_at
+    }
+
+    VERIFICATION_RECORDS {
+        UUID id PK
+        UUID credential_id FK
+        UUID verifier_id FK
+        VARCHAR result
+        TEXT reason
+        TIMESTAMP verified_at
+    }
 ```
 
 ## PostgreSQL Schema
