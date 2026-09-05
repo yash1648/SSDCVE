@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ssdcve-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ssdcve
+      POSTGRES_USER: ssdcve
+      POSTGRES_PASSWORD: ssdcve_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ssdcve_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  ssdcve_postgres_data:
