@@ -3,9 +3,9 @@ spring:
     name: ssdcve
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/ssdcve
-    username: ssdcve
-    password: ssdcve_dev_password
+    url: ${SSDCVE_DB_URL:jdbc:postgresql://localhost:5432/ssdcve}
+    username: ${SSDCVE_DB_USERNAME:ssdcve}
+    password: ${SSDCVE_DB_PASSWORD:ssdcve_dev_password}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -16,11 +16,30 @@ spring:
       hibernate:
         format_sql: true
 
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+
 
 server:
-  port: 6969
+  port: ${SERVER_PORT:6969}
 
 ssdcve:
   keystore:
-    path: ./keystore/ssdcve.p12
+    path: ${SSDCVE_KEYSTORE_PATH:./keystore/ssdcve.p12}
     password: ${SSDCVE_KEYSTORE_PASSWORD}
+
+  ipfs:
+    api-url: ${SSDCVE_IPFS_API_URL:http://localhost:5001}
+
+  jwt:
+    # HS256 key; must be >= 32 bytes. Override in production.
+    secret: ${SSDCVE_JWT_SECRET:dev-only-secret-change-me-0123456789abcdef0123456789abcdef}
+    access-token-ttl-minutes: 15
+
+  auth:
+    refresh-token-ttl-days: 7
+    # Secure cookies are not sent by browsers over plain HTTP.
+    # Set SSDCVE_COOKIE_SECURE=false for local development.
+    cookie-secure: ${SSDCVE_COOKIE_SECURE:true}
