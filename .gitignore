@@ -1,0 +1,25 @@
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# OS
+.DS_Store
+
+# Secrets — private keys and env vars NEVER in git
+*.p12
+*.jks
+*.pfx
+.env
+.env.*
+
+# Build output
+target/
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
