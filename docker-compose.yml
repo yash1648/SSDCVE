@@ -12,5 +12,17 @@ services:
     volumes:
       - ssdcve_postgres_data:/var/lib/postgresql/data
 
+  ipfs:
+    image: ipfs/kubo:v0.36.0
+    container_name: ssdcve-ipfs
+    restart: unless-stopped
+    ports:
+      - "4001:4001"
+      - "5001:5001"
+      - "8080:8080"
+    volumes:
+      - ssdcve_ipfs_data:/data/ipfs
+
 volumes:
   ssdcve_postgres_data:
+  ssdcve_ipfs_data:
