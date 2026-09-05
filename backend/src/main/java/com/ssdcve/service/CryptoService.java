@@ -4,9 +4,11 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 @Service
@@ -63,5 +65,38 @@ public class CryptoService {
         signature.update(content.getBytes(StandardCharsets.UTF_8));
 
         return signature.verify(signatureBytes);
+    }
+
+    public PublicKey decodeEd25519PublicKey(
+            String base64PublicKey)
+            throws GeneralSecurityException {
+
+        if (base64PublicKey == null
+                || base64PublicKey.isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "Public key must not be blank"
+            );
+        }
+
+        final byte[] encoded;
+
+        try {
+            encoded =
+                    Base64.getDecoder()
+                            .decode(base64PublicKey);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException(
+                    "Invalid Base64 public key",
+                    ex
+            );
+        }
+
+        KeyFactory keyFactory =
+                KeyFactory.getInstance("Ed25519");
+
+        return keyFactory.generatePublic(
+                new X509EncodedKeySpec(encoded)
+        );
     }
 }
