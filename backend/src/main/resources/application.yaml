@@ -19,3 +19,8 @@ spring:
 
 server:
   port: 6969
+
+ssdcve:
+  keystore:
+    path: ./keystore/ssdcve.p12
+    password: ${SSDCVE_KEYSTORE_PASSWORD}
