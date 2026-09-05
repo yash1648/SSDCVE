@@ -4,7 +4,6 @@
 *.ipr
 *.iws
 .vscode/
-.mvn/
 # OS
 .DS_Store
 
