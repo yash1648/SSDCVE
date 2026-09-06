@@ -1,0 +1,30 @@
+### Auth endpoints
+@host = http://localhost:6969
+
+### Register a new user (role: HOLDER by default)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "holder@test.edu",
+  "password": "TestPass-123!",
+  "fullName": "Test Holder"
+}
+
+### Login (sets refresh_token cookie, captures accessToken)
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "holder@test.edu",
+  "password": "TestPass-123!"
+}
+
+> {% client.global.set("authToken", response.body.accessToken); %}
+
+### Refresh access token (uses refresh_token cookie)
+POST {{host}}/api/auth/refresh
+
+### Logout (revokes refresh token, clears cookie)
+POST {{host}}/api/auth/logout

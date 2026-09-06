@@ -1,0 +1,32 @@
+### Verifier endpoints
+### Verify is public; history requires role VERIFIER.
+### Flip via psql: UPDATE users SET role='VERIFIER' WHERE email='verifier@test.edu';
+@host = http://localhost:6969
+@envelopePath = /tmp/opencode/envelope.json
+
+### Verify a credential (public, multipart; file from holder download)
+POST {{host}}/api/verifier/verify
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="credentialFile"; filename="envelope.json"
+Content-Type: application/json
+
+< {{envelopePath}}
+--WebAppBoundary--
+
+### Login as verifier (captures accessToken)
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "verifier@test.edu",
+  "password": "TestPass-123!"
+}
+
+> {% client.global.set("authToken", response.body.accessToken); %}
+
+### Verification history (own, newest first)
+GET {{host}}/api/verifier/history
+Authorization: Bearer {{authToken}}

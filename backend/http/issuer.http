@@ -1,0 +1,72 @@
+### Issuer endpoints
+### Requires the logged-in user to have role ISSUER.
+### Flip via psql: UPDATE users SET role='ISSUER' WHERE email='issuer@test.edu';
+@host = http://localhost:6969
+
+### Login as issuer (captures accessToken)
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "issuer@test.edu",
+  "password": "TestPass-123!"
+}
+
+> {% client.global.set("authToken", response.body.accessToken); %}
+
+### Register an issuer entity (verified=false until admin approves)
+POST {{host}}/api/issuer/register
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Test University",
+  "domain": "test.edu"
+}
+
+### Create an Ed25519 signing key
+# @name createKey
+POST {{host}}/api/issuer/keys
+Authorization: Bearer {{authToken}}
+
+> {% client.global.set("keyId", response.body.keyId); %}
+
+### Issue a credential (subjectId = a registered user's UUID)
+# @name issue
+POST {{host}}/api/issuer/credentials
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "subjectId": "00000000-0000-0000-0000-000000000000",
+  "type": "DegreeCertificate",
+  "title": "Bachelor of Engineering",
+  "claims": {
+    "degree": "BE",
+    "year": 2026
+  }
+}
+
+> {% client.global.set("credentialId", response.body.id); %}
+
+### List own credentials
+GET {{host}}/api/issuer/credentials
+Authorization: Bearer {{authToken}}
+
+### Get one credential
+GET {{host}}/api/issuer/credentials/{{credentialId}}
+Authorization: Bearer {{authToken}}
+
+### Revoke a credential
+POST {{host}}/api/issuer/credentials/{{credentialId}}/revoke
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "reason": "Issued in error"
+}
+
+### List verifications of own credentials
+GET {{host}}/api/issuer/verifications
+Authorization: Bearer {{authToken}}

@@ -22,3 +22,5 @@ build/
 
 # Logs
 *.log
+# Agent temp state
+.tmp/

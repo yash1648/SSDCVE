@@ -1,0 +1,35 @@
+### Admin endpoints
+### Requires the logged-in user to have role ADMIN.
+### Flip via psql: UPDATE users SET role='ADMIN' WHERE email='admin@test.edu';
+@host = http://localhost:6969
+
+### Login as admin (captures accessToken)
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.edu",
+  "password": "TestPass-123!"
+}
+
+> {% client.global.set("authToken", response.body.accessToken); %}
+
+### List all issuers
+# @name issuers
+GET {{host}}/api/admin/issuers
+Authorization: Bearer {{authToken}}
+
+> {% client.global.set("issuerId", response.body[0].id); %}
+
+### Verify an issuer (idempotent; enables issuance)
+POST {{host}}/api/admin/issuers/{{issuerId}}/verify
+Authorization: Bearer {{authToken}}
+
+### List all users
+GET {{host}}/api/admin/users
+Authorization: Bearer {{authToken}}
+
+### List all verification records
+GET {{host}}/api/admin/verifications
+Authorization: Bearer {{authToken}}
