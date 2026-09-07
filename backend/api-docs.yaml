@@ -1,0 +1,756 @@
+openapi: 3.1.0
+info:
+  title: SSD-CVE API
+  description: "Self-Sovereign Digital Credential Verification Engine. Register, issue,\
+    \ hold, verify, and revoke verifiable credentials."
+  version: 1.0.0
+servers:
+- url: http://localhost:6969
+  description: Generated server url
+security:
+- bearerAuth: []
+paths:
+  /api/verifier/verify:
+    post:
+      tags:
+      - verifier-controller
+      operationId: verify
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                credentialFile:
+                  type: string
+                  format: binary
+              required:
+              - credentialFile
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerificationResult"
+  /api/issuer/register:
+    post:
+      tags:
+      - issuer-controller
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IssuerRegisterRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/IssuerResponse"
+  /api/issuer/keys:
+    post:
+      tags:
+      - issuer-controller
+      operationId: createKey
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/IssuerKeyResponse"
+  /api/issuer/credentials:
+    get:
+      tags:
+      - issuer-controller
+      operationId: list
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CredentialResponse"
+    post:
+      tags:
+      - issuer-controller
+      operationId: issue
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CredentialIssueRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CredentialResponse"
+  /api/issuer/credentials/{id}/revoke:
+    post:
+      tags:
+      - issuer-controller
+      operationId: revoke
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevokeRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RevokeResponse"
+  /api/holder/wallet/{credentialId}:
+    post:
+      tags:
+      - holder-controller
+      operationId: add
+      parameters:
+      - name: credentialId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/WalletCredentialResponse"
+    delete:
+      tags:
+      - holder-controller
+      operationId: remove
+      parameters:
+      - name: credentialId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+  /api/auth/register:
+    post:
+      tags:
+      - auth-controller
+      operationId: register_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+  /api/auth/refresh:
+    post:
+      tags:
+      - auth-controller
+      operationId: refresh
+      parameters:
+      - name: refresh_token
+        in: cookie
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+  /api/auth/logout:
+    post:
+      tags:
+      - auth-controller
+      operationId: logout
+      parameters:
+      - name: refresh_token
+        in: cookie
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/auth/login:
+    post:
+      tags:
+      - auth-controller
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+  /api/admin/issuers/{id}/verify:
+    post:
+      tags:
+      - admin-controller
+      operationId: verifyIssuer
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminIssuerResponse"
+  /api/verifier/history:
+    get:
+      tags:
+      - verifier-controller
+      operationId: history
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VerificationHistoryResponse"
+  /api/issuer/verifications:
+    get:
+      tags:
+      - issuer-controller
+      operationId: verifications
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VerificationRecordResponse"
+  /api/issuer/credentials/{id}:
+    get:
+      tags:
+      - issuer-controller
+      operationId: get
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CredentialResponse"
+  /api/holder/wallet:
+    get:
+      tags:
+      - holder-controller
+      operationId: wallet
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WalletCredentialResponse"
+  /api/holder/credentials/{id}/download:
+    get:
+      tags:
+      - holder-controller
+      operationId: download
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+  /api/admin/verifications:
+    get:
+      tags:
+      - admin-controller
+      operationId: verifications_1
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminVerificationResponse"
+  /api/admin/users:
+    get:
+      tags:
+      - admin-controller
+      operationId: users
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminUserResponse"
+  /api/admin/issuers:
+    get:
+      tags:
+      - admin-controller
+      operationId: issuers
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminIssuerResponse"
+components:
+  schemas:
+    VerificationResult:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        status:
+          type: string
+          enum:
+          - VALID
+          - TAMPERED
+          - REVOKED
+          - EXPIRED
+          - NOT_FOUND
+          - UNAVAILABLE
+        credentialNumber:
+          type: string
+        reason:
+          type: string
+        issuerId:
+          type: string
+          format: uuid
+        issuerName:
+          type: string
+        issuerDomain:
+          type: string
+        issuerVerified:
+          type: boolean
+        claims:
+          type: object
+          additionalProperties: {}
+        issuedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        verifiedAt:
+          type: string
+          format: date-time
+    IssuerRegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          minLength: 0
+        domain:
+          type: string
+          maxLength: 255
+          minLength: 0
+      required:
+      - domain
+      - name
+    IssuerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        domain:
+          type: string
+        verified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    IssuerKeyResponse:
+      type: object
+      properties:
+        keyId:
+          type: string
+        publicKey:
+          type: string
+        algorithm:
+          type: string
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: string
+          format: date-time
+    CredentialIssueRequest:
+      type: object
+      properties:
+        subjectId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        claims:
+          type: object
+          additionalProperties: {}
+      required:
+      - claims
+      - subjectId
+      - title
+      - type
+    CredentialResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        credentialNumber:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        contentHash:
+          type: string
+        ipfsCid:
+          type: string
+        signature:
+          type: string
+        signatureAlgorithm:
+          type: string
+        keyId:
+          type: string
+        issuedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - REVOKED
+    RevokeRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 1000
+          minLength: 0
+    RevokeResponse:
+      type: object
+      properties:
+        credentialId:
+          type: string
+          format: uuid
+        credentialNumber:
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - REVOKED
+        revokedAt:
+          type: string
+          format: date-time
+        reason:
+          type: string
+    WalletCredentialResponse:
+      type: object
+      properties:
+        credentialId:
+          type: string
+          format: uuid
+        credentialNumber:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        issuerId:
+          type: string
+          format: uuid
+        issuerName:
+          type: string
+        issuerDomain:
+          type: string
+        issuedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - REVOKED
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          maxLength: 72
+          minLength: 8
+        fullName:
+          type: string
+          maxLength: 255
+          minLength: 0
+      required:
+      - email
+      - fullName
+      - password
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+          enum:
+          - ISSUER
+          - HOLDER
+          - VERIFIER
+          - ADMIN
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+        expiresInSeconds:
+          type: integer
+          format: int64
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+          enum:
+          - ISSUER
+          - HOLDER
+          - VERIFIER
+          - ADMIN
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - email
+      - password
+    AdminIssuerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        domain:
+          type: string
+        verified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    VerificationHistoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        credentialId:
+          type: string
+          format: uuid
+        credentialNumber:
+          type: string
+        result:
+          type: string
+          enum:
+          - VALID
+          - TAMPERED
+          - REVOKED
+          - EXPIRED
+          - NOT_FOUND
+          - UNAVAILABLE
+        reason:
+          type: string
+        verifiedAt:
+          type: string
+          format: date-time
+    VerificationRecordResponse:
+      type: object
+      properties:
+        credentialNumber:
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - REVOKED
+        reason:
+          type: string
+        revokedAt:
+          type: string
+          format: date-time
+        issuedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+    AdminVerificationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        credentialId:
+          type: string
+          format: uuid
+        credentialNumber:
+          type: string
+        verifierId:
+          type: string
+          format: uuid
+        result:
+          type: string
+          enum:
+          - VALID
+          - TAMPERED
+          - REVOKED
+          - EXPIRED
+          - NOT_FOUND
+          - UNAVAILABLE
+        reason:
+          type: string
+        verifiedAt:
+          type: string
+          format: date-time
+    AdminUserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+          enum:
+          - ISSUER
+          - HOLDER
+          - VERIFIER
+          - ADMIN
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+  securitySchemes:
+    bearerAuth:
+      type: http
+      name: bearerAuth
+      scheme: bearer
+      bearerFormat: JWT
