@@ -100,6 +100,35 @@ public class HolderController {
                 .body(envelope);
     }
 
+    @GetMapping("/credentials/{id}/certificate")
+    public ResponseEntity<byte[]> certificate(
+            Authentication authentication,
+            @PathVariable UUID id)
+            throws Exception {
+
+        byte[] pdf =
+                holderService.downloadCertificate(
+                        currentUserId(authentication),
+                        id
+                );
+
+        String filename =
+                holderService.certificateFilename(
+                        currentUserId(authentication),
+                        id
+                );
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\""
+                                + filename
+                                + "\""
+                )
+                .body(pdf);
+    }
+
     private UUID currentUserId(
             Authentication authentication) {
 

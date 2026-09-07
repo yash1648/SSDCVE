@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class VerificationService {
@@ -306,6 +307,50 @@ public class VerificationService {
                 VerificationStatus.VALID,
                 "Credential verified successfully"
         );
+    }
+
+    /**
+     * Public verification by credential id: loads the stored
+     * envelope from IPFS and runs the full verification engine.
+     * Used by the QR code printed on certificate PDFs.
+     */
+    @Transactional(readOnly = true)
+    public VerificationResult verifyByCredentialId(
+            UUID credentialId)
+            throws Exception {
+
+        Credential credential =
+                credentialRepository
+                        .findById(credentialId)
+                        .orElse(null);
+
+        if (credential == null) {
+
+            return failure(
+                    VerificationStatus.NOT_FOUND,
+                    "Credential not in registry"
+            );
+        }
+
+        final byte[] storedBytes;
+
+        try {
+
+            storedBytes =
+                    ipfsService.retrieve(
+                            credential.getIpfsCid()
+                    );
+
+        } catch (Exception ex) {
+
+            return failureForCredential(
+                    credential,
+                    VerificationStatus.UNAVAILABLE,
+                    "IPFS document unavailable"
+            );
+        }
+
+        return verify(storedBytes);
     }
 
     private VerificationResult success(

@@ -526,6 +526,70 @@ class HolderControllerTest {
     }
 
     @Test
+    void certificate_ownWalletCredential_returnsPdf()
+            throws Exception {
+
+        User holder = createUser(Role.HOLDER);
+
+        JsonNode credential =
+                issuedCredentialFor(holder);
+
+        String credentialId = credential.get("id").asText();
+
+        addToWallet(holder, credentialId);
+
+        mockMvc.perform(
+                        get(
+                                "/api/holder/credentials/"
+                                        + credentialId
+                                        + "/certificate"
+                        )
+                                .header(
+                                        "Authorization",
+                                        bearer(holder)
+                                )
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        content().contentType(
+                                MediaType.APPLICATION_PDF
+                        )
+                )
+                .andExpect(
+                        header().string(
+                                HttpHeaders.CONTENT_DISPOSITION,
+                                org.hamcrest.Matchers
+                                        .containsString(".pdf\"")
+                        )
+                )
+                .andExpect(
+                        content().string(
+                                org.hamcrest.Matchers
+                                        .startsWith("%PDF")
+                        )
+                );
+    }
+
+    @Test
+    void certificate_notInWallet_returns404() throws Exception {
+
+        User holder = createUser(Role.HOLDER);
+
+        mockMvc.perform(
+                        get(
+                                "/api/holder/credentials/"
+                                        + UUID.randomUUID()
+                                        + "/certificate"
+                        )
+                                .header(
+                                        "Authorization",
+                                        bearer(holder)
+                                )
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void download_notInWallet_returns404() throws Exception {
 
         User holder = createUser(Role.HOLDER);

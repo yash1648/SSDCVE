@@ -43,3 +43,6 @@ ssdcve:
     # Secure cookies are not sent by browsers over plain HTTP.
     # Set SSDCVE_COOKIE_SECURE=false for local development.
     cookie-secure: ${SSDCVE_COOKIE_SECURE:true}
+
+  # Base URL embedded in certificate PDF QR codes.
+  public-base-url: ${SSDCVE_PUBLIC_BASE_URL:http://localhost:6969}

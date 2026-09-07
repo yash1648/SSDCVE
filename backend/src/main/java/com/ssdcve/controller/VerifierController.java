@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -75,6 +76,27 @@ public class VerifierController {
          * The endpoint is public: the verifier is the authenticated
          * principal when present, null for anonymous attempts.
          */
+        verificationHistoryService.record(
+                result,
+                currentVerifierId()
+        );
+
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping(
+            value = "/verify/{credentialId}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<VerificationResult> verifyById(
+            @PathVariable UUID credentialId)
+            throws Exception {
+
+        VerificationResult result =
+                verificationService.verifyByCredentialId(
+                        credentialId
+                );
+
         verificationHistoryService.record(
                 result,
                 currentVerifierId()

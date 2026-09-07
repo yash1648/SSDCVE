@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -178,5 +179,60 @@ class VerifierControllerTest {
                         multipart("/api/verifier/verify")
                 )
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void verifyById_validCredential_returns200() throws Exception {
+
+        UUID credentialId = UUID.randomUUID();
+
+        when(verificationService.verifyByCredentialId(credentialId))
+                .thenReturn(
+                        result(
+                                true,
+                                VerificationStatus.VALID
+                        )
+                );
+
+        mockMvc.perform(
+                        get(
+                                "/api/verifier/verify/"
+                                        + credentialId
+                        )
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.valid").value(true))
+                .andExpect(
+                        jsonPath("$.status")
+                                .value("VALID")
+                );
+    }
+
+    @Test
+    void verifyById_unknownCredential_returnsNotFound()
+            throws Exception {
+
+        UUID credentialId = UUID.randomUUID();
+
+        when(verificationService.verifyByCredentialId(credentialId))
+                .thenReturn(
+                        result(
+                                false,
+                                VerificationStatus.NOT_FOUND
+                        )
+                );
+
+        mockMvc.perform(
+                        get(
+                                "/api/verifier/verify/"
+                                        + credentialId
+                        )
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.valid").value(false))
+                .andExpect(
+                        jsonPath("$.status")
+                                .value("NOT_FOUND")
+                );
     }
 }

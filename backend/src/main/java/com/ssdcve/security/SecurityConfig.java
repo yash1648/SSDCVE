@@ -46,6 +46,11 @@ public class SecurityConfig {
                                 "/api/verifier/verify"
                         )
                         .permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/verifier/verify/**"
+                        )
+                        .permitAll()
                         .requestMatchers("/api/issuer/**")
                         .hasAnyRole("ISSUER", "ADMIN")
                         .requestMatchers("/api/holder/**")
@@ -53,11 +58,6 @@ public class SecurityConfig {
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/verifier/history"
-                        )
-                        .authenticated()
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/verifier/verify/**"
                         )
                         .authenticated()
                         .requestMatchers("/api/admin/**")

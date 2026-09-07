@@ -10,6 +10,7 @@ import com.ssdcve.repository.CredentialRepository;
 import com.ssdcve.repository.CredentialStatusRepository;
 import com.ssdcve.repository.HolderWalletRepository;
 import com.ssdcve.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,19 +34,26 @@ public class HolderService {
     private final CredentialRepository credentialRepository;
     private final CredentialStatusRepository statusRepository;
     private final IpfsService ipfsService;
+    private final CertificatePdfService certificatePdfService;
+    private final String publicBaseUrl;
 
     public HolderService(
             UserRepository userRepository,
             HolderWalletRepository walletRepository,
             CredentialRepository credentialRepository,
             CredentialStatusRepository statusRepository,
-            IpfsService ipfsService) {
+            IpfsService ipfsService,
+            CertificatePdfService certificatePdfService,
+            @Value("${ssdcve.public-base-url:http://localhost:6969}")
+            String publicBaseUrl) {
 
         this.userRepository = userRepository;
         this.walletRepository = walletRepository;
         this.credentialRepository = credentialRepository;
         this.statusRepository = statusRepository;
         this.ipfsService = ipfsService;
+        this.certificatePdfService = certificatePdfService;
+        this.publicBaseUrl = publicBaseUrl;
     }
 
     @Transactional(readOnly = true)
@@ -128,25 +136,40 @@ public class HolderService {
             UUID credentialId)
             throws Exception {
 
-        HolderWallet wallet =
-                walletRepository
-                        .findByUserIdAndCredentialId(
-                                userId,
-                                credentialId
-                        )
-                        .orElseThrow(() ->
-                                new ResponseStatusException(
-                                        HttpStatus.NOT_FOUND,
-                                        "Credential not in wallet: "
-                                                + credentialId
-                                ));
-
         /*
          * Return the exact stored envelope from IPFS - never
          * regenerate or re-sign.
          */
         return ipfsService.retrieve(
-                wallet.getCredential().getIpfsCid()
+                walletEntry(userId, credentialId)
+                        .getCredential()
+                        .getIpfsCid()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] downloadCertificate(
+            UUID userId,
+            UUID credentialId)
+            throws Exception {
+
+        Credential credential =
+                walletEntry(userId, credentialId)
+                        .getCredential();
+
+        byte[] envelope =
+                ipfsService.retrieve(
+                        credential.getIpfsCid()
+                );
+
+        String verificationUrl =
+                publicBaseUrl
+                        + "/api/verifier/verify/"
+                        + credential.getId();
+
+        return certificatePdfService.generate(
+                envelope,
+                verificationUrl
         );
     }
 
@@ -155,22 +178,38 @@ public class HolderService {
             UUID userId,
             UUID credentialId) {
 
-        HolderWallet wallet =
-                walletRepository
-                        .findByUserIdAndCredentialId(
-                                userId,
-                                credentialId
-                        )
-                        .orElseThrow(() ->
-                                new ResponseStatusException(
-                                        HttpStatus.NOT_FOUND,
-                                        "Credential not in wallet: "
-                                                + credentialId
-                                ));
-
-        return wallet.getCredential()
+        return walletEntry(userId, credentialId)
+                .getCredential()
                 .getCredentialNumber()
                 + ".json";
+    }
+
+    @Transactional(readOnly = true)
+    public String certificateFilename(
+            UUID userId,
+            UUID credentialId) {
+
+        return walletEntry(userId, credentialId)
+                .getCredential()
+                .getCredentialNumber()
+                + ".pdf";
+    }
+
+    private HolderWallet walletEntry(
+            UUID userId,
+            UUID credentialId) {
+
+        return walletRepository
+                .findByUserIdAndCredentialId(
+                        userId,
+                        credentialId
+                )
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Credential not in wallet: "
+                                        + credentialId
+                        ));
     }
 
     private WalletCredentialResponse toWalletResponse(
