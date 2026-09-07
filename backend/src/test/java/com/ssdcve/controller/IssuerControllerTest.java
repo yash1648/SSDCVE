@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -511,6 +513,103 @@ class IssuerControllerTest {
         byte[] stored = ipfsService.retrieve(ipfsCid);
 
         assertThat(stored).isNotEmpty();
+    }
+
+    @Test
+    @Transactional
+    void attachDocument_pdf_returns200WithDocumentCid()
+            throws Exception {
+
+        User user = createUser(Role.ISSUER);
+
+        Issuer issuer = registerIssuer(user);
+
+        verifyIssuer(issuer);
+
+        createKey(user);
+
+        JsonNode credential =
+                issueCredential(user, createSubject());
+
+        String credentialId = credential.get("id").asText();
+
+        MockMultipartFile document =
+                new MockMultipartFile(
+                        "document",
+                        "original.pdf",
+                        MediaType.APPLICATION_PDF_VALUE,
+                        "%PDF-1.4 fake pdf content".getBytes()
+                );
+
+        mockMvc.perform(
+                        multipart(
+                                "/api/issuer/credentials/"
+                                        + credentialId
+                                        + "/document"
+                        )
+                                .file(document)
+                                .header(
+                                        "Authorization",
+                                        bearer(user)
+                                )
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.documentCid")
+                                .isNotEmpty()
+                );
+
+        Credential stored =
+                credentialRepository
+                        .findById(
+                                UUID.fromString(credentialId)
+                        )
+                        .orElseThrow();
+
+        assertThat(stored.getDocumentCid()).isNotBlank();
+        assertThat(stored.getDocumentContentType())
+                .isEqualTo(MediaType.APPLICATION_PDF_VALUE);
+    }
+
+    @Test
+    @Transactional
+    void attachDocument_unsupportedType_returns415()
+            throws Exception {
+
+        User user = createUser(Role.ISSUER);
+
+        Issuer issuer = registerIssuer(user);
+
+        verifyIssuer(issuer);
+
+        createKey(user);
+
+        JsonNode credential =
+                issueCredential(user, createSubject());
+
+        String credentialId = credential.get("id").asText();
+
+        MockMultipartFile document =
+                new MockMultipartFile(
+                        "document",
+                        "original.txt",
+                        MediaType.TEXT_PLAIN_VALUE,
+                        "not a certificate".getBytes()
+                );
+
+        mockMvc.perform(
+                        multipart(
+                                "/api/issuer/credentials/"
+                                        + credentialId
+                                        + "/document"
+                        )
+                                .file(document)
+                                .header(
+                                        "Authorization",
+                                        bearer(user)
+                                )
+                )
+                .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test

@@ -19,6 +19,8 @@ public record CredentialResponse(
 
         String ipfsCid,
 
+        String documentCid,
+
         String signature,
 
         String signatureAlgorithm,

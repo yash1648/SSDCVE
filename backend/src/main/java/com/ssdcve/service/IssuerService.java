@@ -47,6 +47,7 @@ public class IssuerService {
     private final CredentialStatusRepository statusRepository;
     private final CredentialService credentialService;
     private final RevocationService revocationService;
+    private final IpfsService ipfsService;
     private final ObjectMapper objectMapper;
 
     public IssuerService(
@@ -58,6 +59,7 @@ public class IssuerService {
             CredentialStatusRepository statusRepository,
             CredentialService credentialService,
             RevocationService revocationService,
+            IpfsService ipfsService,
             ObjectMapper objectMapper) {
 
         this.userRepository = userRepository;
@@ -68,6 +70,7 @@ public class IssuerService {
         this.statusRepository = statusRepository;
         this.credentialService = credentialService;
         this.revocationService = revocationService;
+        this.ipfsService = ipfsService;
         this.objectMapper = objectMapper;
     }
 
@@ -221,6 +224,44 @@ public class IssuerService {
         return toCredentialResponse(credential);
     }
 
+    /**
+     * Attaches the student's original certificate document
+     * (scan/PDF) to an issued credential. The document is stored
+     * on IPFS and composed into the certificate PDF on download.
+     * It is an attachment, not part of the signed envelope.
+     */
+    @Transactional
+    public CredentialResponse attachDocument(
+            UUID userId,
+            UUID credentialId,
+            byte[] document,
+            String contentType)
+            throws Exception {
+
+        Issuer issuer = requireVerifiedIssuer(userId);
+
+        Credential credential =
+                credentialRepository
+                        .findByIdAndIssuerId(
+                                credentialId,
+                                issuer.getId()
+                        )
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "Credential not found: "
+                                                + credentialId
+                                ));
+
+        String cid = ipfsService.upload(document);
+
+        credential.setDocumentCid(cid);
+        credential.setDocumentContentType(contentType);
+        credentialRepository.save(credential);
+
+        return toCredentialResponse(credential);
+    }
+
     @Transactional
     public RevokeResponse revokeCredential(
             UUID userId,
@@ -361,6 +402,7 @@ public class IssuerService {
                 credential.getTitle(),
                 credential.getContentHash(),
                 credential.getIpfsCid(),
+                credential.getDocumentCid(),
                 credential.getSignature(),
                 credential.getSignatureAlgorithm(),
                 credential.getKeyId(),

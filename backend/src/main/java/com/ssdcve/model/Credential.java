@@ -70,6 +70,18 @@ public class Credential {
     private String ipfsCid;
 
     @Column(
+            name = "document_cid",
+            length = 255
+    )
+    private String documentCid;
+
+    @Column(
+            name = "document_content_type",
+            length = 100
+    )
+    private String documentContentType;
+
+    @Column(
             nullable = false,
             columnDefinition = "TEXT"
     )
@@ -196,6 +208,22 @@ public class Credential {
 
     public void setIpfsCid(String ipfsCid) {
         this.ipfsCid = ipfsCid;
+    }
+
+    public String getDocumentCid() {
+        return documentCid;
+    }
+
+    public void setDocumentCid(String documentCid) {
+        this.documentCid = documentCid;
+    }
+
+    public String getDocumentContentType() {
+        return documentContentType;
+    }
+
+    public void setDocumentContentType(String documentContentType) {
+        this.documentContentType = documentContentType;
     }
 
     public String getSignature() {

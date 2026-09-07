@@ -162,6 +162,16 @@ public class HolderService {
                         credential.getIpfsCid()
                 );
 
+        byte[] document = null;
+
+        if (credential.getDocumentCid() != null) {
+
+            document =
+                    ipfsService.retrieve(
+                            credential.getDocumentCid()
+                    );
+        }
+
         String verificationUrl =
                 publicBaseUrl
                         + "/api/verifier/verify/"
@@ -169,7 +179,9 @@ public class HolderService {
 
         return certificatePdfService.generate(
                 envelope,
-                verificationUrl
+                verificationUrl,
+                document,
+                credential.getDocumentContentType()
         );
     }
 

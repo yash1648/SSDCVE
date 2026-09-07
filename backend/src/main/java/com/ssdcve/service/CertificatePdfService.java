@@ -7,6 +7,8 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.ssdcve.dto.response.CanonicalCredential;
 import com.ssdcve.dto.response.SignedCredentialEnvelope;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -15,6 +17,7 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -54,7 +57,9 @@ public class CertificatePdfService {
 
     public byte[] generate(
             byte[] envelopeBytes,
-            String verificationUrl)
+            String verificationUrl,
+            byte[] documentBytes,
+            String documentContentType)
             throws Exception {
 
         SignedCredentialEnvelope envelope =
@@ -79,12 +84,82 @@ public class CertificatePdfService {
                 drawQr(cs, document, verificationUrl);
             }
 
+            if (documentBytes != null
+                    && documentBytes.length > 0) {
+
+                appendDocument(
+                        document,
+                        documentBytes,
+                        documentContentType
+                );
+            }
+
             ByteArrayOutputStream out =
                     new ByteArrayOutputStream();
 
             document.save(out);
 
             return out.toByteArray();
+        }
+    }
+
+    /**
+     * Composes the issuer-uploaded original certificate into the
+     * certificate PDF: PDFs are appended page-by-page, images are
+     * scaled to fit a fresh page.
+     */
+    private void appendDocument(
+            PDDocument document,
+            byte[] documentBytes,
+            String contentType)
+            throws Exception {
+
+        if (MediaType.APPLICATION_PDF_VALUE.equals(contentType)) {
+
+            try (PDDocument uploaded =
+                         Loader.loadPDF(documentBytes)) {
+
+                PDFMergerUtility merger = new PDFMergerUtility();
+                merger.appendDocument(document, uploaded);
+            }
+
+            return;
+        }
+
+        PDImageXObject image =
+                PDImageXObject.createFromByteArray(
+                        document,
+                        documentBytes,
+                        "original-certificate"
+                );
+
+        PDPage imagePage = new PDPage(PAGE);
+        document.addPage(imagePage);
+
+        float maxWidth = PAGE.getWidth() - 100;
+        float maxHeight = PAGE.getHeight() - 100;
+
+        float scale = Math.min(
+                maxWidth / image.getWidth(),
+                maxHeight / image.getHeight()
+        );
+
+        float width = image.getWidth() * scale;
+        float height = image.getHeight() * scale;
+
+        try (PDPageContentStream cs =
+                     new PDPageContentStream(
+                             document,
+                             imagePage
+                     )) {
+
+            cs.drawImage(
+                    image,
+                    (PAGE.getWidth() - width) / 2f,
+                    (PAGE.getHeight() - height) / 2f,
+                    width,
+                    height
+            );
         }
     }
 

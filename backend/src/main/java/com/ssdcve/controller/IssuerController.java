@@ -12,6 +12,7 @@ import com.ssdcve.model.Role;
 import com.ssdcve.service.IssuerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,9 +20,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -32,6 +36,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/issuer")
 public class IssuerController {
+
+    private static final Set<String> ALLOWED_DOCUMENT_TYPES =
+            Set.of(
+                    MediaType.APPLICATION_PDF_VALUE,
+                    MediaType.IMAGE_PNG_VALUE,
+                    MediaType.IMAGE_JPEG_VALUE
+            );
 
     private final IssuerService issuerService;
 
@@ -129,6 +140,40 @@ public class IssuerController {
         return ResponseEntity.ok(
                 issuerService.listVerifications(
                         currentUserId(authentication)
+                )
+        );
+    }
+
+    @PostMapping(
+            value = "/credentials/{id}/document",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<CredentialResponse> attachDocument(
+            Authentication authentication,
+            @PathVariable UUID id,
+            @RequestPart("document") MultipartFile document)
+            throws Exception {
+
+        if (document.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String contentType = document.getContentType();
+
+        if (contentType == null
+                || !ALLOWED_DOCUMENT_TYPES.contains(contentType)) {
+
+            return ResponseEntity
+                    .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                    .build();
+        }
+
+        return ResponseEntity.ok(
+                issuerService.attachDocument(
+                        currentUserId(authentication),
+                        id,
+                        document.getBytes(),
+                        contentType
                 )
         );
     }

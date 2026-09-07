@@ -12,21 +12,27 @@ import com.ssdcve.repository.IssuerRepository;
 import com.ssdcve.repository.UserRepository;
 import com.ssdcve.service.IpfsService;
 import com.ssdcve.service.JwtUtil;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -587,6 +593,100 @@ class HolderControllerTest {
                                 )
                 )
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void certificate_withIssuerDocument_containsDocumentPages()
+            throws Exception {
+
+        User holder = createUser(Role.HOLDER);
+
+        User issuerUser = createUser(Role.ISSUER);
+
+        Issuer issuer = registerIssuer(issuerUser);
+
+        verifyIssuer(issuer);
+
+        createKey(issuerUser);
+
+        JsonNode credential =
+                issueCredential(issuerUser, holder);
+
+        String credentialId = credential.get("id").asText();
+
+        addToWallet(holder, credentialId);
+
+        /*
+         * A real one-page PDF generated with PDFBox.
+         */
+        byte[] originalPdf;
+
+        try (PDDocument doc = new PDDocument()) {
+
+            doc.addPage(new PDPage());
+
+            ByteArrayOutputStream out =
+                    new ByteArrayOutputStream();
+
+            doc.save(out);
+
+            originalPdf = out.toByteArray();
+        }
+
+        mockMvc.perform(
+                        multipart(
+                                "/api/issuer/credentials/"
+                                        + credentialId
+                                        + "/document"
+                        )
+                                .file(
+                                        new MockMultipartFile(
+                                                "document",
+                                                "original.pdf",
+                                                MediaType
+                                                        .APPLICATION_PDF_VALUE,
+                                                originalPdf
+                                        )
+                                )
+                                .header(
+                                        "Authorization",
+                                        bearer(issuerUser)
+                                )
+                )
+                .andExpect(status().isOk());
+
+        MvcResult result =
+                mockMvc.perform(
+                                get(
+                                        "/api/holder/credentials/"
+                                                + credentialId
+                                                + "/certificate"
+                                )
+                                        .header(
+                                                "Authorization",
+                                                bearer(holder)
+                                        )
+                        )
+                        .andExpect(status().isOk())
+                        .andExpect(
+                                content().contentType(
+                                        MediaType.APPLICATION_PDF
+                                )
+                        )
+                        .andReturn();
+
+        byte[] certificatePdf =
+                result.getResponse().getContentAsByteArray();
+
+        try (PDDocument loaded =
+                     Loader.loadPDF(certificatePdf)) {
+
+            /*
+             * Certificate page + the issuer's original document.
+             */
+            assertThat(loaded.getNumberOfPages())
+                    .isEqualTo(2);
+        }
     }
 
     @Test
