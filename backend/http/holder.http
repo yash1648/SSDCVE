@@ -1,7 +1,7 @@
 ### Holder endpoints
 @host = http://localhost:6969
 @credentialId = {{credentialId}}
-@envelopePath = /tmp/opencode/envelope.json
+@envelopePath = ../.tmp/envelope.json
 
 ### Login as holder (captures accessToken)
 # @name login
@@ -23,11 +23,20 @@ Authorization: Bearer {{authToken}}
 POST {{host}}/api/holder/wallet/{{credentialId}}
 Authorization: Bearer {{authToken}}
 
-### Remove a credential from the wallet
-DELETE {{host}}/api/holder/wallet/{{credentialId}}
-Authorization: Bearer {{authToken}}
-
 ### Download the signed envelope (saves to {{envelopePath}} for verification)
+### NOTE: >> never overwrites — on re-runs it writes envelope-2.json, envelope-3.json, ...
+###       delete ../.tmp/envelope.json first so verifier.http reads the fresh one
 GET {{host}}/api/holder/credentials/{{credentialId}}/download
 Authorization: Bearer {{authToken}}
+
 >> {{envelopePath}}
+
+### Download the printable certificate PDF (page 1: certificate + QR; page 2+: issuer-uploaded document)
+GET {{host}}/api/holder/credentials/{{credentialId}}/certificate
+Authorization: Bearer {{authToken}}
+
+>> ../.tmp/certificate.pdf
+
+### Remove a credential from the wallet (after downloads — download requires wallet membership)
+DELETE {{host}}/api/holder/wallet/{{credentialId}}
+Authorization: Bearer {{authToken}}

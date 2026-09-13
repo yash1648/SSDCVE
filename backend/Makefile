@@ -22,7 +22,7 @@ test: up       ## run all tests (starts containers first)
 	SSDCVE_KEYSTORE_PASSWORD=$(KEYSTORE_PASSWORD) ./mvnw test
 
 build:         ## package the jar
-	./mvnw clean package
+	SSDCVE_KEYSTORE_PASSWORD=$(KEYSTORE_PASSWORD) ./mvnw clean package
 
 clean:         ## remove build output
 	./mvnw clean

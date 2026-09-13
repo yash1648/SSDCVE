@@ -2,9 +2,9 @@
 ### Verify is public; history requires role VERIFIER.
 ### Flip via psql: UPDATE users SET role='VERIFIER' WHERE email='verifier@test.edu';
 @host = http://localhost:6969
-@envelopePath = /tmp/opencode/envelope.json
 
 ### Verify a credential (public, multipart; file from holder download)
+### NOTE: path is hardcoded (not a variable) — ijhttp CLI cannot resolve variables in < file-reference lines
 POST {{host}}/api/verifier/verify
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
@@ -12,8 +12,11 @@ Content-Type: multipart/form-data; boundary=WebAppBoundary
 Content-Disposition: form-data; name="credentialFile"; filename="envelope.json"
 Content-Type: application/json
 
-< {{envelopePath}}
+< ../.tmp/envelope.json
 --WebAppBoundary--
+
+### Verify by credential id (public, no auth; URL is what the certificate QR encodes)
+GET {{host}}/api/verifier/verify/{{credentialId}}
 
 ### Login as verifier (captures accessToken)
 # @name login

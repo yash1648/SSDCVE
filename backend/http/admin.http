@@ -2,6 +2,17 @@
 ### Requires the logged-in user to have role ADMIN.
 ### Flip via psql: UPDATE users SET role='ADMIN' WHERE email='admin@test.edu';
 @host = http://localhost:6969
+#
+#### Register a new user (role: Admin )
+#POST {{host}}/api/auth/register
+#Content-Type: application/json
+#
+#{
+#  "email": "admin@test.edu",
+#  "password": "TestPass-123!",
+#  "fullName": "Test Admin"
+#}
+#
 
 ### Login as admin (captures accessToken)
 # @name login
@@ -20,9 +31,12 @@ Content-Type: application/json
 GET {{host}}/api/admin/issuers
 Authorization: Bearer {{authToken}}
 
-> {% client.global.set("issuerId", response.body[0].id); %}
+> {% 
+  const pending = response.body.find(i => !i.verified);
+  client.global.set("issuerId", pending ? pending.id : response.body[0].id);
+%}
 
-### Verify an issuer (idempotent; enables issuance)
+### Verify an issuer (idempotent; enables issuance; targets the first unverified issuer)
 POST {{host}}/api/admin/issuers/{{issuerId}}/verify
 Authorization: Bearer {{authToken}}
 
