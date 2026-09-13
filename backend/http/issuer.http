@@ -2,6 +2,7 @@
 ### Requires the logged-in user to have role ISSUER.
 ### Flip via psql: UPDATE users SET role='ISSUER' WHERE email='issuer@test.edu';
 @host = http://localhost:6969
+@subjectId = 4c0b921a-e6e7-4b9f-ac78-2193886c780e
 
 ### Login as issuer (captures accessToken)
 # @name login
@@ -32,14 +33,14 @@ Authorization: Bearer {{authToken}}
 
 > {% client.global.set("keyId", response.body.keyId); %}
 
-### Issue a credential (subjectId = a registered user's UUID)
+### Issue a credential (subjectId = a registered user's UUID; replace @subjectId above with a real one, e.g. from admin.http → List all users)
 # @name issue
 POST {{host}}/api/issuer/credentials
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-  "subjectId": "00000000-0000-0000-0000-000000000000",
+  "subjectId": "{{subjectId}}",
   "type": "DegreeCertificate",
   "title": "Bachelor of Engineering",
   "claims": {
@@ -66,6 +67,18 @@ Content-Type: application/json
 {
   "reason": "Issued in error"
 }
+
+### Attach the original certificate/document (PDF, PNG or JPEG; appended to the printable PDF)
+POST {{host}}/api/issuer/credentials/{{credentialId}}/document
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="document"; filename="original.pdf"
+Content-Type: application/pdf
+
+< /tmp/opencode/original.pdf
+--WebAppBoundary--
 
 ### List verifications of own credentials
 GET {{host}}/api/issuer/verifications

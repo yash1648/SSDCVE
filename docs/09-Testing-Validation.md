@@ -9,21 +9,23 @@ flowchart LR
     --> INTEGRATION["Integration Tests"]
     --> E2E["End-to-End Tests"]
 
-    TC["Testcontainers"]
+    DC["docker-compose"]
 
-    TC -.->|"Provides test infrastructure"| INTEGRATION
+    DC -.->|"Provides test infrastructure"| INTEGRATION
 
-    TC --> PG["PostgreSQL"]
-    TC --> IPFS["IPFS / Kubo"]
+    DC --> PG["PostgreSQL"]
+    DC --> IPFS["IPFS / Kubo"]
 ```
 
-**Testcontainers** is the infrastructure mechanism (PostgreSQL + IPFS/Kubo) supporting integration/E2E tests — not a separate layer.
+**docker-compose** provides the infrastructure (PostgreSQL + IPFS/Kubo) used by the integration/E2E tests — not a separate layer. Tests run with `@SpringBootTest` + MockMvc + Mockito against the real PostgreSQL and local Kubo services.
 
 | Layer | Purpose |
 |-------|---------|
 | Unit | Individual services/components in isolation |
 | Integration | Spring Boot + PostgreSQL + IPFS interactions |
 | E2E | Complete user workflow through React → API → DB/IPFS |
+
+> **Test data setup:** test users (`issuer@test.edu`, `holder@test.edu`, `verifier@test.edu`, `admin@test.edu`) are **registered via the committed `.http` authentication flows** (`auth.http`) and then assigned their roles (SQL role-flip) for testing. They are **real records in the PostgreSQL database** — there is **no seed script** (`data.sql`) and no demo-user fixture.
 
 ## Critical Test Cases
 
@@ -232,7 +234,7 @@ flowchart TD
 ## Milestone Validation Checklist
 
 - [ ] All unit tests pass
-- [ ] Integration tests pass (Testcontainers)
+- [ ] Integration tests pass (PostgreSQL + IPFS via docker-compose)
 - [ ] E2E: issue → store → share → verify → revoke → verify
 - [ ] Security: JWT expiry, RBAC, ownership checks
 - [ ] ₹0 cost maintained

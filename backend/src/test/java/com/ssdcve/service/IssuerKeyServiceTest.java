@@ -124,4 +124,57 @@ class IssuerKeyServiceTest {
                 savedStates
         );
     }
+
+    @Test
+    void createSigningKey_deactivatesPreviousActiveKey(
+            @TempDir Path tempDir) throws Exception {
+
+        UUID issuerId = UUID.randomUUID();
+
+        Issuer issuer = new Issuer();
+        issuer.setName("Example University");
+        issuer.setDomain("example.edu");
+
+        IssuerRepository issuerRepository =
+                mock(IssuerRepository.class);
+
+        IssuerKeyRepository issuerKeyRepository =
+                mock(IssuerKeyRepository.class);
+
+        when(issuerRepository.findById(issuerId))
+                .thenReturn(Optional.of(issuer));
+
+        when(issuerKeyRepository.existsByKeyId(any()))
+                .thenReturn(false);
+
+        when(issuerKeyRepository.save(any(IssuerKey.class)))
+                .thenAnswer(invocation ->
+                        invocation.getArgument(0));
+
+        KeyStoreService keyStoreService =
+                new KeyStoreService(
+                        tempDir.resolve("test.p12").toString(),
+                        "test-password"
+                );
+
+        IssuerKeyService service =
+                new IssuerKeyService(
+                        issuerRepository,
+                        issuerKeyRepository,
+                        keyStoreService
+                );
+
+        IssuerKey created =
+                service.createSigningKey(issuerId);
+
+        /*
+         * Rotation: the previous active key must be deactivated
+         * so findByIssuerIdAndActiveTrue stays unique, and the
+         * new key is the single active one.
+         */
+        verify(issuerKeyRepository)
+                .deactivateByIssuerId(issuerId);
+
+        assertTrue(created.isActive());
+    }
 }

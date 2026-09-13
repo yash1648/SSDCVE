@@ -81,6 +81,8 @@ SSI is a digital identity model where **the individual owns and controls their i
 
 ## 3. Key Technologies Behind SSD-CVE
 
+> **Note:** This section is **background/educational** — it describes the broader SSI/VC technology landscape. The MVP implements a subset: canonical JSON credentials, SHA-256 hashing, Ed25519 signatures, PostgreSQL + local IPFS. It does **not** implement DIDs, JSON-LD credentials, or blockchain (see [SSDCVE-DESIGN.md](SSDCVE-DESIGN.md)).
+
 ### 3.1 Verifiable Credentials (W3C Standard)
 
 A **Verifiable Credential** is a tamper-evident digital credential that cryptographically proves who issued it. Think of it as a digital version of a degree, certificate, or ID card.
@@ -203,13 +205,15 @@ did:ethr:0xb9c5714089478a327f09197987f16f9e5d936e8a
 │  │              Data/Storage Layer                      │       │
 │  │  ┌───────────┐  ┌───────────┐  ┌───────────┐       │       │
 │  │  │ Blockchain│  │  IPFS/    │  │ Database  │       │       │
-│  │  │ (Anchor)  │  │ Distributed│ │ (Records) │       │       │
+│  │  │ (Future)  │  │ Distributed│ │ (Records) │       │       │
 │  │  │           │  │  Storage  │  │           │       │       │
 │  │  └───────────┘  └───────────┘  └───────────┘       │       │
 │  └─────────────────────────────────────────────────────┘       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+> **Note:** The **Blockchain (Anchor)** layer is **future work** — the current MVP uses local IPFS + PostgreSQL only, with no blockchain (see [SSDCVE-DESIGN.md §1 Locked Decisions](SSDCVE-DESIGN.md)).
 
 ### 4.2 Component Breakdown
 
@@ -233,7 +237,7 @@ University ──→ Creates credential ──→ Signs with private key ──�
                       │
                       ▼
               Stores hash on blockchain
-              (optional anchoring)
+              (future work — not in MVP)
 ```
 
 ### 5.2 Certificate Verification Flow
@@ -270,8 +274,8 @@ University ──→ Marks credential as revoked ──→ Updates status list
 | **Status Checking** | Real-time valid/revoked/expired status |
 | **Issuer Management** | Register and manage authorized issuers |
 | **No Manual Inspection** | Automated, machine-readable verification |
-| **Transparent Audit Trail** | Blockchain-anchored proof of issuance |
-| **Interoperability** | Based on W3C Verifiable Credentials standard |
+| **Transparent Audit Trail** | Verification records stored in PostgreSQL (blockchain anchoring is future work) |
+| **Interoperability** | Aligned with W3C Verifiable Credentials concepts (full VC/DID compliance is future work) |
 
 ---
 
@@ -286,7 +290,7 @@ University ──→ Marks credential as revoked ──→ Updates status list
 | **Revocation Check** | Manual / Slow | Real-time / Status list |
 | **Scalability** | Poor (manual process) | High (machine-verifiable) |
 | **Cross-border** | Difficult (different systems) | Interoperable (W3C standard) |
-| **Privacy** | Full document shared | Selective disclosure possible |
+| **Privacy** | Full document shared | Full document shared (selective disclosure is future work) |
 
 ---
 
@@ -339,25 +343,25 @@ University ──→ Marks credential as revoked ──→ Updates status list
 | **Credential Tampering** | Digital signatures + hash verification |
 | **Replay Attacks** | Nonce + timestamp validation |
 | **Key Compromise** | Key rotation + revocation mechanism |
-| **Privacy Leakage** | Selective disclosure + zero-knowledge proofs |
-| **Issuer Impersonation** | DID resolution + trusted issuer registries |
+| **Privacy Leakage** | Selective disclosure + zero-knowledge proofs (future work) |
+| **Issuer Impersonation** | Verified-issuer registry + Ed25519 signature verification |
 | **Revocation Bypass** | Real-time status list checking |
-| **Quantum Threat** | Future migration to quantum-resistant cryptosuites |
+| **Quantum Threat** | Future migration to quantum-resistant cryptosuites (not in MVP) |
 
 ---
 
 ## 11. W3C Standards Alignment
 
-This project aligns with the following W3C specifications:
+The project is **conceptually aligned** with the following W3C specifications. The current MVP implements the Issuer–Holder–Verifier model and cryptographic verification directly (canonical JSON + SHA-256 + Ed25519) rather than full VC/DID compliance; full alignment with these standards is **future work**.
 
-| Standard | Version | Status | Purpose |
-|----------|---------|--------|---------|
-| **Verifiable Credentials Data Model** | v2.1 | Candidate Recommendation (2026) | Core credential data model |
-| **Decentralized Identifiers (DIDs)** | v1.1 | Working Draft (2026) | Identifier specification |
-| **VC Data Integrity** | v1.1 | First Public Working Draft (2026) | Cryptographic proof mechanism |
-| **DID Resolution** | v1.0 | Candidate Recommendation (2026) | DID document resolution |
-| **VC JSON Schema** | v1.0 | Candidate Recommendation | Credential schema validation |
-| **Recognized Entities** | v1.0 | Working Draft (2026) | Trust registry interoperability |
+| Standard | Version | Status | Relevance to SSD-CVE |
+|----------|---------|--------|----------------------|
+| **Verifiable Credentials Data Model** | v2.1 | Candidate Recommendation (2026) | Role model (Issuer/Holder/Verifier) and credential structure concepts |
+| **Decentralized Identifiers (DIDs)** | v1.1 | Working Draft (2026) | Future: DID-based issuer identifiers (MVP uses UUID issuer entities) |
+| **VC Data Integrity** | v1.1 | First Public Working Draft (2026) | Future: standardized proof format (MVP uses custom signed envelope) |
+| **DID Resolution** | v1.0 | Candidate Recommendation (2026) | Future: DID document resolution |
+| **VC JSON Schema** | v1.0 | Candidate Recommendation | Future: credential schema validation |
+| **Recognized Entities** | v1.0 | Working Draft (2026) | Future: trust registry interoperability |
 
 ---
 
@@ -370,13 +374,27 @@ This project aligns with the following W3C specifications:
 | **Phase 3** | Issuer Portal + Credential Issuance | 3-4 weeks |
 | **Phase 4** | Holder Wallet + Credential Sharing | 2-3 weeks |
 | **Phase 5** | Verifier Portal + Verification Engine | 3-4 weeks |
-| **Phase 6** | Blockchain Anchoring + Status Lists | 2-3 weeks |
+| **Phase 6** | Blockchain Anchoring + Status Lists (future work, not in MVP) | 2-3 weeks |
 | **Phase 7** | Integration Testing + Security Audit | 2-3 weeks |
 | **Phase 8** | Documentation + Demo + Presentation | 1-2 weeks |
 
 ---
 
 ## 13. Key References
+
+### Literature (from Literature Survey — see [11-Literature-Survey.md](11-Literature-Survey.md))
+
+1. **Rustemi, A., Dalipi, F., Atanasovski, V., Risteski, A.** — A Systematic Literature Review on Blockchain-Based Systems for Academic Certificate Verification. *IEEE Access.*
+2. **Mühle, A., Grüner, A., Gayvoronskaya, T., Meinel, C.** — A Survey on Essential Components of a Self-Sovereign Identity. *Computer Science Review.*
+3. **Jaafar, R. A., Alsaad, S. N., Al-Kabi, M. N.** — Educational Certificate Verification System: Enhancing Security and Authenticity using Ethereum Blockchain and IPFS. *Al-Mustansiriyah Journal of Science.*
+4. **HLFeCERT study authors** — Hyperledger Fabric Blockchain Framework: Efficient Solution for Academic Certificate Decentralized Repository. *IEEE I-SMAC Conference.*
+5. **Selective Disclosure in Digital Credentials: A Review.** *ICT Express* (2024).
+6. **Chiș, D., Caramihai, M.** — Blockchain in Higher Education: A Secure Traceability Architecture for Degree Verification. *IntechOpen.*
+7. **Decentralized Certificate Issuance and Verification System Using Ethereum Blockchain Technology.** *Journal of Network and Computer Applications.*
+8. **Academic Certificate Verification using Blockchain Technology.** *IEEE Conference Publication.*
+9. **Thai, P. K., Gummadavelli, S., Pagidipalli, A., Gulab, A.** — A Blockchain-Based Framework for Academic Certificate Verification Using IPFS. *World Journal of Advanced Research and Reviews.*
+
+### Standards
 
 1. **W3C Verifiable Credentials Data Model v2.1** — https://www.w3.org/TR/vc-data-model-2.1/
 2. **W3C Decentralized Identifiers (DIDs) v1.1** — https://www.w3.org/TR/did/upcoming/

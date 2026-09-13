@@ -28,6 +28,7 @@
 | POST | `/api/holder/wallet/{credentialId}` | Add credential |
 | DELETE | `/api/holder/wallet/{credentialId}` | Remove credential |
 | GET | `/api/holder/credentials/{id}/download` | Download credential |
+| GET | `/api/holder/credentials/{id}/certificate` | Download certificate PDF |
 
 ## Verifier
 

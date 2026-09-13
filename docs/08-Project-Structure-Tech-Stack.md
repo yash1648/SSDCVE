@@ -101,7 +101,7 @@ SSDCVE/
 | Validation | Jakarta Bean Validation |
 | Build | Maven |
 | PDF | Apache PDFBox |
-| Testing | JUnit 5 + Mockito + Testcontainers |
+| Testing | JUnit 5 + Mockito + Spring Boot Test (`@SpringBootTest` + MockMvc) |
 
 **No extra crypto library** — Java JCA/JCE provides all needed primitives.
 
@@ -157,7 +157,7 @@ flowchart TB
 | Maven | ₹0 |
 | Docker | ₹0 |
 | PDFBox | ₹0 |
-| JUnit / Mockito / Testcontainers | ₹0 |
+| JUnit / Mockito / Spring Boot Test | ₹0 |
 | Axios / React Router / Tailwind / Zod etc. | ₹0 |
 | **Total** | **₹0** |
 
