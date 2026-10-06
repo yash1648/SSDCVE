@@ -137,11 +137,10 @@ the client is built for it. Even the public slice needs this foundation
   Return-to: a logged-out holder opening ?add=<id> is sent through login
   with the destination and add param preserved, lands back, and finds the
   form prefilled. The add is never auto-submitted; it requires a click.
-- Phase 0 audit item (ownership): record whether
-  POST /api/holder/wallet/{credentialId} verifies the credential was issued
-  to that holder. If not, the UUID is a bearer secret and the shareable
-  link leaks it: finding goes to the user for a keep-with-warning vs
-  drop-the-link decision. Backend stays frozen either way.
+- Phase 0 audit item (ownership): RESOLVED as checked. HolderService
+  verifies the credential was issued to the holder (403 on mismatch), so
+  the UUID is not a bearer secret and the shareable wallet link stands
+  without a warning.
 
 ## 7. Verification gate (per slice)
 
