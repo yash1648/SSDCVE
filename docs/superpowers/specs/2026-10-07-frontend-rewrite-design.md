@@ -1,7 +1,7 @@
 # SSDCVE Frontend Rewrite — Design Spec
 
 Date: 2026-10-07
-Status: approved (all 5 sections signed off in chat)
+Status: revised after review (5 sections signed off in chat, review feedback folded in)
 Path: brainstorming/architectural → writing-plans next
 
 ## 1. Background
@@ -54,6 +54,15 @@ Resolved during review (verified read-only, 2026-10-07):
 - Gold #A16207 on bg #F0F9FF measures 4.62:1 (passes, near the line):
   gold is reserved for large/bold text, seals, and accents, never small
   body copy. Muted-fg on bg measures 7.03:1.
+- Secondary #0EA5E9 measures 2.6:1 on bg (fails text and 3:1 component
+  minimums): secondary is decorative-fill only (chart areas, illustration,
+  large graphic blocks), never text, icons that carry meaning, or
+  interactive boundaries. Primary #0369A1 (5.57:1) carries all text and
+  interactive states.
+- Destructive #DC2626 on bg measures 4.53:1 (passes, near the line):
+  destructive text stays at standard sizes, never de-emphasized small print.
+- Dark pairs all pass strongly: gold #D9A441 on navy 7.97 / on card 6.80;
+  sky #38BDFC on navy 8.41 / on card 7.17.
 
 ## 3b. Auth and session foundations (Phase 0, before slice 0)
 
@@ -64,6 +73,14 @@ POST /api/auth/logout and clears state. Refresh cookie requires CORS with
 credentials or same-origin deployment: Phase 0 records which is true and
 the client is built for it. Even the public slice needs this foundation
 (history link, saved sessions, logged-in nav state).
+- Public routes never send stale tokens: the client skips the Authorization
+  header on the permitAll list (verify POSTs, anchor/chain/verify GETs),
+  because a JWT filter can 401 an expired bearer even where auth is not
+  required. Fallback rule: on a 401 from those routes, retry once without
+  the token. A 401 on a public route never triggers logout or redirect.
+- 403 is not 401: history and role-gated routes may refuse an authenticated
+  but wrong-role user. On 403 the UI shows "not authorized for your role"
+  with a way back; it never refreshes, never logs out.
 
 ## 4. Design tokens
 
@@ -95,7 +112,7 @@ the client is built for it. Even the public slice needs this foundation
 ## 6. Slices
 
 0. Public: landing, verify (single/batch/by-ID seals with next actions),
-   chain. 1. Verifier: workspace, batch (+exportCsv if honest), history.
+   chain. 1. Verifier: workspace, batch + exportCsv, history.
 2a. Issuer onboarding and issue: registration states (see below), keys
    (session-only: no list endpoint exists, so the UI shows keys created
    this session and says so), issue wizard (subjectId/type/title/claims).
@@ -117,6 +134,14 @@ the client is built for it. Even the public slice needs this foundation
   only by pasting a credential ID. The issue-success screen offers copy-ID
   plus a shareable wallet link, and the wallet accepts ?add=<id> to prefill
   the add form. Decided: no backend change, link format is frontend-only.
+  Return-to: a logged-out holder opening ?add=<id> is sent through login
+  with the destination and add param preserved, lands back, and finds the
+  form prefilled. The add is never auto-submitted; it requires a click.
+- Phase 0 audit item (ownership): record whether
+  POST /api/holder/wallet/{credentialId} verifies the credential was issued
+  to that holder. If not, the UUID is a bearer secret and the shareable
+  link leaks it: finding goes to the user for a keep-with-warning vs
+  drop-the-link decision. Backend stays frozen either way.
 
 ## 7. Verification gate (per slice)
 
