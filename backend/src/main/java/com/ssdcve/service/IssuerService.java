@@ -3,24 +3,10 @@ package com.ssdcve.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssdcve.dto.request.CredentialIssueRequest;
 import com.ssdcve.dto.request.IssuerRegisterRequest;
-import com.ssdcve.dto.response.CredentialResponse;
-import com.ssdcve.dto.response.IssuerKeyResponse;
-import com.ssdcve.dto.response.IssuerResponse;
-import com.ssdcve.dto.response.RevokeResponse;
-import com.ssdcve.dto.response.SignedCredentialEnvelope;
-import com.ssdcve.dto.response.VerificationRecordResponse;
-import com.ssdcve.model.Credential;
-import com.ssdcve.model.CredentialStatus;
+import com.ssdcve.dto.response.*;
+import com.ssdcve.model.*;
 import com.ssdcve.model.CredentialStatus.Status;
-import com.ssdcve.model.Issuer;
-import com.ssdcve.model.IssuerKey;
-import com.ssdcve.model.Role;
-import com.ssdcve.model.User;
-import com.ssdcve.repository.CredentialRepository;
-import com.ssdcve.repository.CredentialStatusRepository;
-import com.ssdcve.repository.IssuerKeyRepository;
-import com.ssdcve.repository.IssuerRepository;
-import com.ssdcve.repository.UserRepository;
+import com.ssdcve.repository.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,8 +19,8 @@ import java.util.UUID;
 /**
  * Issuer business layer. The authenticated user (from the JWT
  * principal) is the single source of issuer identity - a client
- * never supplies an issuerId. All authorization, crypto, and
- * persistence is delegated to the existing services.
+ * never supplies an issuerId. All authorization, crypto, blockchain
+ * anchoring, and persistence is delegated to the appropriate services.
  */
 @Service
 public class IssuerService {
@@ -48,6 +34,9 @@ public class IssuerService {
     private final CredentialService credentialService;
     private final RevocationService revocationService;
     private final IpfsService ipfsService;
+    private final CredentialAnchorRepository anchorRepository;
+    private final BlockchainAnchorService blockchainAnchorService;
+    private final HolderWalletRepository walletRepository;
     private final ObjectMapper objectMapper;
 
     public IssuerService(
@@ -60,6 +49,9 @@ public class IssuerService {
             CredentialService credentialService,
             RevocationService revocationService,
             IpfsService ipfsService,
+            CredentialAnchorRepository anchorRepository,
+            BlockchainAnchorService blockchainAnchorService,
+            HolderWalletRepository walletRepository,
             ObjectMapper objectMapper) {
 
         this.userRepository = userRepository;
@@ -71,6 +63,9 @@ public class IssuerService {
         this.credentialService = credentialService;
         this.revocationService = revocationService;
         this.ipfsService = ipfsService;
+        this.anchorRepository = anchorRepository;
+        this.blockchainAnchorService = blockchainAnchorService;
+        this.walletRepository = walletRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -99,6 +94,26 @@ public class IssuerService {
         issuer.setVerified(false);
 
         issuer = issuerRepository.save(issuer);
+
+        return new IssuerResponse(
+                issuer.getId(),
+                issuer.getName(),
+                issuer.getDomain(),
+                issuer.isVerified(),
+                issuer.getCreatedAt()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public IssuerResponse getIssuerProfile(UUID userId) {
+
+        Issuer issuer = issuerRepository.findByUserId(userId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Issuer not registered for user: "
+                                        + userId
+                        ));
 
         return new IssuerResponse(
                 issuer.getId(),
@@ -178,7 +193,83 @@ public class IssuerService {
                         metadataJson
                 );
 
+        /*
+         * Anchor the content hash on-chain. Failure rolls back the
+         * credential insert: every issued credential is anchored.
+         */
+        String txHash =
+                blockchainAnchorService.anchor(
+                        credential.getContentHash()
+                );
+
+        Long blockNumber =
+                blockchainAnchorService.getBlockNumber(
+                        txHash
+                );
+
+        anchorRepository.save(
+                new CredentialAnchor(
+                        credential,
+                        txHash,
+                        blockNumber,
+                        blockchainAnchorService.getChainId()
+                )
+        );
+
+        deliverToSubject(subject, credential);
+
         return toCredentialResponse(credential);
+    }
+
+    /**
+     * Puts a freshly issued credential straight into its recipient's
+     * wallet, so issuing IS delivery and the holder has nothing to do.
+     */
+    private void deliverToSubject(
+            User subject,
+            Credential credential) {
+
+        if (walletRepository.existsByUserIdAndCredentialId(
+                subject.getId(),
+                credential.getId())) {
+
+            return;
+        }
+
+        HolderWallet entry = new HolderWallet();
+        entry.setUser(subject);
+        entry.setCredential(credential);
+        walletRepository.save(entry);
+    }
+
+    /**
+     * Resolves a recipient by email so the issuer picks a person rather
+     * than a pasted account id.
+     */
+    @Transactional(readOnly = true)
+    public UserResponse findHolderByEmail(String email) {
+
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException(
+                    "An email address is required"
+            );
+        }
+
+        User holder =
+                userRepository
+                        .findByEmail(email.trim().toLowerCase())
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "No holder with that email"
+                                ));
+
+        return new UserResponse(
+                holder.getId(),
+                holder.getEmail(),
+                holder.getFullName(),
+                holder.getRole()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -210,11 +301,6 @@ public class IssuerService {
                                 issuer.getId()
                         )
                         .orElseThrow(() ->
-                                /*
-                                 * 404 for both "does not exist"
-                                 * and "belongs to another issuer":
-                                 * no cross-tenant existence leak.
-                                 */
                                 new ResponseStatusException(
                                         HttpStatus.NOT_FOUND,
                                         "Credential not found: "
@@ -273,12 +359,6 @@ public class IssuerService {
 
         if (role == Role.ADMIN) {
 
-            /*
-             * ADMIN acts across issuers: resolve the credential's
-             * own issuer and pass it through the existing
-             * RevocationService ownership check, which then
-             * passes trivially.
-             */
             Credential credential =
                     credentialRepository
                             .findById(credentialId)
@@ -298,10 +378,6 @@ public class IssuerService {
 
             Issuer issuer = getIssuerForUser(userId);
 
-            /*
-             * Ownership check lives inside RevocationService:
-             * cross-issuer revocation throws SecurityException.
-             */
             status = revocationService.revoke(
                     credentialId,
                     issuer,
@@ -395,14 +471,36 @@ public class IssuerService {
                         )
                         .orElse(null);
 
+        CredentialAnchor anchor =
+                anchorRepository
+                        .findByCredentialId(
+                                credential.getId()
+                        )
+                        .orElse(null);
+
         return new CredentialResponse(
                 credential.getId(),
                 credential.getCredentialNumber(),
                 credential.getType(),
                 credential.getTitle(),
+                credential.getSubject() == null
+                        ? null
+                        : credential.getSubject().getId(),
+                credential.getSubject() == null
+                        ? null
+                        : credential.getSubject().getFullName(),
                 credential.getContentHash(),
                 credential.getIpfsCid(),
                 credential.getDocumentCid(),
+                anchor == null
+                        ? null
+                        : anchor.getTxHash(),
+                anchor == null
+                        ? null
+                        : anchor.getBlockNumber(),
+                anchor == null
+                        ? null
+                        : anchor.getChainId(),
                 credential.getSignature(),
                 credential.getSignatureAlgorithm(),
                 credential.getKeyId(),

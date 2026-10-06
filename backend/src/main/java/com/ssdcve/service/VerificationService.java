@@ -1,13 +1,19 @@
 package com.ssdcve.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssdcve.dto.response.AnchorLookupResponse;
+import com.ssdcve.dto.response.DisclosureInfo;
 import com.ssdcve.dto.response.SignedCredentialEnvelope;
 import com.ssdcve.dto.response.VerificationResult;
 import com.ssdcve.model.Credential;
+import com.ssdcve.model.CredentialAnchor;
+import com.ssdcve.model.CredentialDisclosure;
 import com.ssdcve.model.CredentialStatus;
 import com.ssdcve.model.CredentialStatus.Status;
 import com.ssdcve.model.IssuerKey;
 import com.ssdcve.model.VerificationStatus;
+import com.ssdcve.repository.CredentialAnchorRepository;
+import com.ssdcve.repository.CredentialDisclosureRepository;
 import com.ssdcve.repository.CredentialRepository;
 import com.ssdcve.repository.CredentialStatusRepository;
 import com.ssdcve.repository.IssuerKeyRepository;
@@ -17,8 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -31,6 +39,9 @@ public class VerificationService {
     private final IpfsService ipfsService;
     private final CanonicalizationService canonicalizationService;
     private final CryptoService cryptoService;
+    private final CredentialAnchorRepository anchorRepository;
+    private final BlockchainAnchorService blockchainAnchorService;
+    private final CredentialDisclosureRepository disclosureRepository;
 
     public VerificationService(
             ObjectMapper objectMapper,
@@ -39,7 +50,10 @@ public class VerificationService {
             IssuerKeyRepository issuerKeyRepository,
             IpfsService ipfsService,
             CanonicalizationService canonicalizationService,
-            CryptoService cryptoService) {
+            CryptoService cryptoService,
+            CredentialAnchorRepository anchorRepository,
+            BlockchainAnchorService blockchainAnchorService,
+            CredentialDisclosureRepository disclosureRepository) {
 
         this.objectMapper = objectMapper;
         this.credentialRepository = credentialRepository;
@@ -48,6 +62,9 @@ public class VerificationService {
         this.ipfsService = ipfsService;
         this.canonicalizationService = canonicalizationService;
         this.cryptoService = cryptoService;
+        this.anchorRepository = anchorRepository;
+        this.blockchainAnchorService = blockchainAnchorService;
+        this.disclosureRepository = disclosureRepository;
     }
 
     @Transactional(readOnly = true)
@@ -353,11 +370,106 @@ public class VerificationService {
         return verify(storedBytes);
     }
 
+    /**
+     * Public anchor lookup: anyone can check a credential's on-chain
+     * anchor by credential number, without uploading the file.
+     * Returns null when the credential or its anchor does not exist.
+     */
+    @Transactional(readOnly = true)
+    public AnchorLookupResponse lookupAnchor(
+            String credentialNumber) {
+
+        Credential credential =
+                credentialRepository
+                        .findByCredentialNumber(
+                                credentialNumber
+                        )
+                        .orElse(null);
+
+        if (credential == null) {
+            return null;
+        }
+
+        CredentialAnchor anchor =
+                anchorRepository
+                        .findByCredentialId(
+                                credential.getId()
+                        )
+                        .orElse(null);
+
+        if (anchor == null) {
+            return null;
+        }
+
+        boolean anchorVerified = false;
+
+        try {
+
+            anchorVerified =
+                    blockchainAnchorService.verifyAnchor(
+                            credential.getContentHash(),
+                            anchor.getTxHash()
+                    );
+
+        } catch (Exception ex) {
+
+            anchorVerified = false;
+        }
+
+        return new AnchorLookupResponse(
+                credential.getCredentialNumber(),
+                credential.getContentHash(),
+                anchor.getTxHash(),
+                anchor.getBlockNumber(),
+                anchor.getChainId(),
+                anchorVerified
+        );
+    }
+
     private VerificationResult success(
             Credential credential,
             SignedCredentialEnvelope envelope,
             VerificationStatus status,
             String reason) {
+
+        CredentialAnchor anchor =
+                anchorRepository
+                        .findByCredentialId(
+                                credential.getId()
+                        )
+                        .orElse(null);
+
+        /*
+         * Best-effort on-chain check: confirm the stored tx carries
+         * this content hash. If the node is unreachable, the anchor
+         * info from the DB is still shown - the chain is evidence,
+         * not a single point of failure.
+         */
+        boolean anchorVerified = false;
+
+        if (anchor != null) {
+
+            try {
+
+                anchorVerified =
+                        blockchainAnchorService.verifyAnchor(
+                                credential.getContentHash(),
+                                anchor.getTxHash()
+                        );
+
+            } catch (Exception ex) {
+
+                anchorVerified = false;
+            }
+        }
+
+        Map<String, Object> allClaims = envelope == null
+                ? Map.of()
+                : envelope.credential().claims();
+
+        DisclosedView disclosed = applyDisclosure(
+                credential,
+                allClaims);
 
         return new VerificationResult(
                 status == VerificationStatus.VALID,
@@ -368,9 +480,7 @@ public class VerificationService {
                 credential.getIssuer().getName(),
                 credential.getIssuer().getDomain(),
                 credential.getIssuer().isVerified(),
-                envelope == null
-                        ? Map.of()
-                        : envelope.credential().claims(),
+                disclosed.visible(),
                 credential.getIssuedAt()
                         .toInstant(ZoneOffset.UTC),
                 credential.getExpiresAt() == null
@@ -379,8 +489,76 @@ public class VerificationService {
                             .toInstant(
                                 ZoneOffset.UTC
                             ),
-                Instant.now()
+                Instant.now(),
+                anchor == null
+                        ? null
+                        : anchor.getTxHash(),
+                anchor == null
+                        ? null
+                        : anchor.getBlockNumber(),
+                anchor == null
+                        ? null
+                        : anchor.getChainId(),
+                anchorVerified,
+                disclosed.info()
         );
+    }
+
+    /*
+     * Presentation only. Every integrity check above this point has
+     * already run against the COMPLETE payload, so a verifier looking
+     * at a partial view still knows the whole credential is authentic
+     * - their view is narrow, their assurance is not.
+     *
+     * Package-private rather than private so the unit test can call
+     * it directly instead of through reflection.
+     */
+    DisclosedView applyDisclosure(
+            Credential credential,
+            Map<String, Object> allClaims) {
+
+        Set<String> hidden = disclosureRepository
+                .findByCredentialId(credential.getId())
+                .map(CredentialDisclosure::getHiddenClaims)
+                .orElseGet(Set::of);
+
+        /*
+         * LinkedHashMap deliberately: Collectors.toMap would scramble
+         * the order and the verifier's view would change between runs
+         * for no reason.
+         */
+        Map<String, Object> visible = new LinkedHashMap<>();
+
+        allClaims.forEach((key, value) -> {
+            if (!hidden.contains(key)) {
+                visible.put(key, value);
+            }
+        });
+
+        /*
+         * complete reflects what was ACTUALLY withheld, not what the
+         * policy intended. A hidden key with no matching claim - a
+         * claim dropped from the envelope, a policy row left behind -
+         * withholds nothing, so the view is complete. Deriving it from
+         * hidden.isEmpty() would announce "the holder hid some claims"
+         * on every future verification of a credential hiding nothing
+         * that exists.
+         */
+        return new DisclosedView(
+                visible,
+                new DisclosureInfo(
+                        visible.size(),
+                        allClaims.size(),
+                        visible.size() == allClaims.size()
+                )
+        );
+    }
+
+    /** The claims a verifier is shown, plus a count of what was withheld. */
+    record DisclosedView(
+            Map<String, Object> visible,
+            DisclosureInfo info
+    ) {
     }
 
     private VerificationResult failureForCredential(
@@ -412,7 +590,12 @@ public class VerificationService {
                 null,
                 null,
                 null,
-                Instant.now()
+                Instant.now(),
+                null,
+                null,
+                null,
+                false,
+                new DisclosureInfo(0, 0, true)
         );
     }
 }

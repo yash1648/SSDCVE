@@ -7,6 +7,7 @@ import com.ssdcve.dto.response.CredentialResponse;
 import com.ssdcve.dto.response.IssuerKeyResponse;
 import com.ssdcve.dto.response.IssuerResponse;
 import com.ssdcve.dto.response.RevokeResponse;
+import com.ssdcve.dto.response.UserResponse;
 import com.ssdcve.dto.response.VerificationRecordResponse;
 import com.ssdcve.model.Role;
 import com.ssdcve.service.IssuerService;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,6 +63,31 @@ public class IssuerController {
                         currentUserId(authentication),
                         request
                 ));
+    }
+
+    /**
+     * Resolves a recipient by email. Returns 404 rather than creating an
+     * account, so an issuer can only issue to someone who can actually
+     * receive it.
+     */
+    @GetMapping("/holders")
+    public ResponseEntity<UserResponse> holder(
+            @RequestParam String email) {
+
+        return ResponseEntity.ok(
+                issuerService.findHolderByEmail(email)
+        );
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<IssuerResponse> me(
+            Authentication authentication) {
+
+        return ResponseEntity.ok(
+                issuerService.getIssuerProfile(
+                        currentUserId(authentication)
+                )
+        );
     }
 
     @PostMapping("/keys")

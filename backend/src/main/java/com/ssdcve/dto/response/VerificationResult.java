@@ -30,6 +30,16 @@ public record VerificationResult(
 
         Instant expiresAt,
 
-        Instant verifiedAt
+        Instant verifiedAt,
+
+        String anchorTxHash,
+
+        Long anchorBlockNumber,
+
+        Long anchorChainId,
+
+        boolean anchorVerified,
+
+        DisclosureInfo disclosure
 ) {
 }

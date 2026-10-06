@@ -15,11 +15,21 @@ public record CredentialResponse(
 
         String title,
 
+        UUID subjectId,
+
+        String subjectName,
+
         String contentHash,
 
         String ipfsCid,
 
         String documentCid,
+
+        String anchorTxHash,
+
+        Long anchorBlockNumber,
+
+        Long anchorChainId,
 
         String signature,
 

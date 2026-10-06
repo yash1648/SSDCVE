@@ -11,6 +11,8 @@ import com.ssdcve.model.CredentialStatus.Status;
 import com.ssdcve.model.Issuer;
 import com.ssdcve.model.IssuerKey;
 import com.ssdcve.model.VerificationStatus;
+import com.ssdcve.repository.CredentialAnchorRepository;
+import com.ssdcve.repository.CredentialDisclosureRepository;
 import com.ssdcve.repository.CredentialRepository;
 import com.ssdcve.repository.CredentialStatusRepository;
 import com.ssdcve.repository.IssuerKeyRepository;
@@ -44,6 +46,9 @@ class VerificationServiceTest {
     private CredentialStatusRepository statusRepository;
     private IssuerKeyRepository issuerKeyRepository;
     private IpfsService ipfsService;
+    private CredentialAnchorRepository anchorRepository;
+    private BlockchainAnchorService blockchainAnchorService;
+    private CredentialDisclosureRepository disclosureRepository;
     private VerificationService service;
 
     private UUID issuerId;
@@ -79,6 +84,15 @@ class VerificationServiceTest {
         ipfsService =
                 mock(IpfsService.class);
 
+        anchorRepository =
+                mock(CredentialAnchorRepository.class);
+
+        blockchainAnchorService =
+                mock(BlockchainAnchorService.class);
+
+        disclosureRepository =
+                mock(CredentialDisclosureRepository.class);
+
         service =
                 new VerificationService(
                         objectMapper,
@@ -87,7 +101,10 @@ class VerificationServiceTest {
                         issuerKeyRepository,
                         ipfsService,
                         canonicalizationService,
-                        cryptoService
+                        cryptoService,
+                        anchorRepository,
+                        blockchainAnchorService,
+                        disclosureRepository
                 );
 
         issuerId = UUID.randomUUID();

@@ -1,7 +1,9 @@
 package com.ssdcve.controller;
 
+import com.ssdcve.dto.response.DisclosureInfo;
 import com.ssdcve.dto.response.VerificationResult;
 import com.ssdcve.model.VerificationStatus;
+import com.ssdcve.service.BatchVerificationService;
 import com.ssdcve.service.JwtUtil;
 import com.ssdcve.service.VerificationHistoryService;
 import com.ssdcve.service.VerificationService;
@@ -39,6 +41,9 @@ class VerifierControllerTest {
     @MockBean
     private VerificationHistoryService verificationHistoryService;
 
+    @MockBean
+    private BatchVerificationService batchVerificationService;
+
     private MockMultipartFile credentialFile() {
         return new MockMultipartFile(
                 "credentialFile",
@@ -67,7 +72,12 @@ class VerifierControllerTest {
                 ),
                 Instant.now(),
                 null,
-                Instant.now()
+                Instant.now(),
+                null,
+                null,
+                null,
+                false,
+                new DisclosureInfo(2, 2, true)
         );
     }
 
@@ -197,7 +207,7 @@ class VerifierControllerTest {
         mockMvc.perform(
                         get(
                                 "/api/verifier/verify/"
-                                        + credentialId
+                                         + credentialId
                         )
                 )
                 .andExpect(status().isOk())

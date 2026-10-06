@@ -1,7 +1,10 @@
 package com.ssdcve.controller;
 
+import com.ssdcve.dto.request.DisclosureUpdateRequest;
+import com.ssdcve.dto.response.DisclosureResponse;
 import com.ssdcve.dto.response.WalletCredentialResponse;
 import com.ssdcve.service.HolderService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,6 +14,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -127,6 +132,34 @@ public class HolderController {
                                 + "\""
                 )
                 .body(pdf);
+    }
+
+    @GetMapping("/credentials/{id}/disclosure")
+    public ResponseEntity<DisclosureResponse> getDisclosure(
+            Authentication authentication,
+            @PathVariable UUID id) {
+
+        return ResponseEntity.ok(
+                holderService.getDisclosure(
+                        currentUserId(authentication),
+                        id
+                )
+        );
+    }
+
+    @PutMapping("/credentials/{id}/disclosure")
+    public ResponseEntity<DisclosureResponse> setDisclosure(
+            Authentication authentication,
+            @PathVariable UUID id,
+            @Valid @RequestBody DisclosureUpdateRequest request) {
+
+        return ResponseEntity.ok(
+                holderService.setDisclosure(
+                        currentUserId(authentication),
+                        id,
+                        request.hiddenClaims()
+                )
+        );
     }
 
     private UUID currentUserId(

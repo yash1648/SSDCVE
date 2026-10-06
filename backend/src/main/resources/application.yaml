@@ -18,9 +18,8 @@ spring:
 
   servlet:
     multipart:
-      max-file-size: 2MB
-      max-request-size: 2MB
-
+      max-file-size: 25MB
+      max-request-size: 60MB
 
 server:
   port: ${SERVER_PORT:6969}
@@ -28,10 +27,15 @@ server:
 ssdcve:
   keystore:
     path: ${SSDCVE_KEYSTORE_PATH:./keystore/ssdcve.p12}
-    password: ${SSDCVE_KEYSTORE_PASSWORD}
+    password: ${SSDCVE_KEYSTORE_PASSWORD:change-me-keystore-password}
 
   ipfs:
     api-url: ${SSDCVE_IPFS_API_URL:http://localhost:5001}
+
+  blockchain:
+    rpc-url: ${SSDCVE_BLOCKCHAIN_RPC_URL:http://localhost:8545}
+    from-address: ${SSDCVE_BLOCKCHAIN_FROM:0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266}
+    chain-id: ${SSDCVE_BLOCKCHAIN_CHAIN_ID:31337}
 
   jwt:
     # HS256 key; must be >= 32 bytes. Override in production.
@@ -44,5 +48,19 @@ ssdcve:
     # Set SSDCVE_COOKIE_SECURE=false for local development.
     cookie-secure: ${SSDCVE_COOKIE_SECURE:true}
 
+  swagger:
+    enabled: true
+
+  batch-verification:
+    max-files: 500
+    max-file-size-bytes: 2097152 # 2MB
+    max-zip-size-bytes: 20971520 # 20MB
+    max-extracted-size-bytes: 52428800 # 50MB
+    max-concurrency: 10
+
   # Base URL embedded in certificate PDF QR codes.
   public-base-url: ${SSDCVE_PUBLIC_BASE_URL:http://localhost:6969}
+
+logging:
+  level:
+    web: info
