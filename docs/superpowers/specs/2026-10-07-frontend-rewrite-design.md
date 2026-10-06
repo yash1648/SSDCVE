@@ -33,12 +33,37 @@ on Vite + React, and no mock/demo data ships — every number comes from the API
 | POST /api/auth/* (4) | register, login, refresh, logout | wired incl. silent refresh |
 | /api/issuer/* (10) | register, holders lookup, me, keys, issue/list/get/revoke credential, verifications, attach-document | wired; holders lookup + attachDocument thinnest |
 | /api/holder/* (6) | wallet, add, remove, download, certificate, disclosure get/set | wired incl. disclosure editor |
-| /api/verifier/* (8) | verify, verify-by-id, batch, export-csv, anchor, chain-status, recent-anchors, history | 7 wired; **open: does exportCsv have UI?** Phase 0 resolves; no button ships without honest wiring |
+| /api/verifier/* (8) | verify, verify-by-id, batch, export-csv, anchor, chain-status, recent-anchors, history | All wired; exportCsv ships per resolution below |
 | /api/admin/* (5) | issuers, verify-issuer, promote-issuer, users, verifications | wired |
 
-Phase 0 audit confirms: exportCsv UI status; public-vs-auth for
-verifier/chain endpoints (security config); DTO drift beyond contract.ts;
-screens with no backend (delete candidates).
+Phase 0 audit confirms: DTO drift beyond contract.ts; screens with no
+backend (delete candidates); unverified-issuer issue behavior; no-key
+issue behavior.
+
+Resolved during review (verified read-only, 2026-10-07):
+- exportCsv ships: POST /api/verifier/verify/batch/csv takes the held
+  BatchVerificationResponse JSON, returns text/csv for download.
+- Public-vs-auth resolved in SecurityConfig: POST verify, verify/batch,
+  verify/batch/csv and GET anchor/**, anchors/**, chain/**, verify/** are
+  permitAll, so public proof and chain pages work logged-out. Only
+  GET /api/verifier/history requires auth.
+- Issue wizard fields are exactly subjectId, type, title, claims
+  (CredentialIssueRequest); there is no expiry field, none is added.
+- Binary types: download = application/json attachment, certificate =
+  application/pdf attachment; filenames come from Content-Disposition.
+- Gold #A16207 on bg #F0F9FF measures 4.62:1 (passes, near the line):
+  gold is reserved for large/bold text, seals, and accents, never small
+  body copy. Muted-fg on bg measures 7.03:1.
+
+## 3b. Auth and session foundations (Phase 0, before slice 0)
+
+Single api client owns sessions: access token in memory only; on app load
+one silent refresh attempt that fails quietly with no cookie; on 401 a
+single retry through a request queue, then logout; logout calls
+POST /api/auth/logout and clears state. Refresh cookie requires CORS with
+credentials or same-origin deployment: Phase 0 records which is true and
+the client is built for it. Even the public slice needs this foundation
+(history link, saved sessions, logged-in nav state).
 
 ## 4. Design tokens
 
@@ -47,8 +72,11 @@ screens with no backend (delete candidates).
   #475569 (4.5:1), border #BAE6FD, destructive #DC2626.
 - Dark: navy bg #0A1826, sky #38BDFC, gold #D9A441, cards #10273A.
 - Type: Inter UI/body (tracking-tight headings), Playfair Display for
-  editorial moments only. Tabular numerals for data; mono for credential
-  numbers and hashes.
+  editorial moments only (landing hero, result seals, empty-state titles).
+  Playfair is a serif by design: display use is intentional and stays out
+  of body copy, tables, and forms, so the sans-driven Swiss system never
+  drifts into editorial body text.
+  Tabular numerals for data; mono for credential numbers and hashes.
 - Radius xl cards / lg controls; custom soft shadows (no shadow-md);
   200–250ms ease-out hovers; skeleton shimmer is the only loop;
   prefers-reduced-motion honored. Lucide icons only, one stroke per surface.
@@ -68,11 +96,27 @@ screens with no backend (delete candidates).
 
 0. Public: landing, verify (single/batch/by-ID seals with next actions),
    chain. 1. Verifier: workspace, batch (+exportCsv if honest), history.
-2. Issuer: overview, issue (+holder lookup), credentials + revoke + keys +
-   documents + activity. 3. Holder: wallet, add/remove, downloads,
+2a. Issuer onboarding and issue: registration states (see below), keys
+   (session-only: no list endpoint exists, so the UI shows keys created
+   this session and says so), issue wizard (subjectId/type/title/claims).
+2b. Issuer manage: list, detail, revoke with reason, documents, activity.
+   3. Holder: wallet, add/remove, downloads,
    disclosure editor. 4. Admin: overview, institutions, accounts, audit.
 - Cross-cutting: skeletons + aria-busy, role=alert errors, empties with next
   actions, UTC-explicit dates, no jargon, no em dashes.
+- Glossary rule: verifier pages must show content hash, tx hash, and the six
+  check names, so plain language does not delete technical fields. Each gets
+  a short tooltip in plain words (what it is, why it matters); prose around
+  them stays jargon-free.
+- Issuer state machine: /me 404 means "not registered" and routes to
+  registration, never an error screen. States are unregistered,
+  registered-but-unverified, verified. Phase 0 audits whether an
+  unverified issuer can issue and what happens with no key yet; the UI
+  handles both answers without inventing states.
+- Holder discovery: there is no "issued to me" endpoint, so the wallet fills
+  only by pasting a credential ID. The issue-success screen offers copy-ID
+  plus a shareable wallet link, and the wallet accepts ?add=<id> to prefill
+  the add form. Decided: no backend change, link format is frontend-only.
 
 ## 7. Verification gate (per slice)
 
@@ -81,8 +125,10 @@ copy gate (no em dashes, no leak tokens) → skill checklist (icons, hovers,
 contrast, focus, reduced motion, 375px/1440px) → live Reticle verdict
 (verified:yes or slice not done; unknown/no-fault = not proved).
 
-## 8. Self-review
+## 8. Self-review (after review feedback)
 
 No TBDs. No contradictions (frozen backend vs full redesign reconciled:
-redesign is visual + wiring, never backend). Scope fits one plan with 5
-slices. "Honest wiring" defined: button ships only if endpoint serves it.
+redesign is visual + wiring, never backend). Scope fits one plan with 6
+slices (2a/2b split keeps each gate meaningful). "Honest wiring" defined:
+button ships only if endpoint serves it. Reticle gate stands as written;
+unknown/no-fault verdicts are reported as not proved.
