@@ -1,5 +1,7 @@
 package com.ssdcve.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,9 @@ import java.security.spec.PKCS8EncodedKeySpec;
 @Service
 public class KeyStoreService {
 
+    private static final Logger LOG =
+            LoggerFactory.getLogger(KeyStoreService.class);
+
     private static final String KEYSTORE_TYPE = "PKCS12";
     private static final String KEY_ALGORITHM = "Ed25519";
 
@@ -33,15 +38,38 @@ public class KeyStoreService {
      */
     private static final String STORAGE_ALGORITHM = "AES";
 
+    private static final String DEFAULT_KEYSTORE_PASSWORD =
+            "change-me-keystore-password";
+
     private final Path keystorePath;
     private final char[] keystorePassword;
 
     public KeyStoreService(
-            @Value("${ssdcve.keystore.path}") String keystorePath,
-            @Value("${ssdcve.keystore.password}") String keystorePassword) {
+            @Value("${ssdcve.keystore.path:./keystore/ssdcve.p12}") String keystorePath,
+            @Value("${ssdcve.keystore.password:change-me-keystore-password}") String keystorePassword) {
 
-        this.keystorePath = Path.of(keystorePath);
-        this.keystorePassword = keystorePassword.toCharArray();
+        if ("production".equals(System.getenv("SSDCVE_ENV"))
+                && DEFAULT_KEYSTORE_PASSWORD.equals(keystorePassword)) {
+
+            throw new IllegalStateException(
+                    "ssdcve.keystore.password must be overridden "
+                            + "in production"
+            );
+        }
+
+        this.keystorePath = Path.of(keystorePath).toAbsolutePath().normalize();
+        this.keystorePassword = (keystorePassword != null ? keystorePassword : DEFAULT_KEYSTORE_PASSWORD).toCharArray();
+
+        if (Files.exists(this.keystorePath)) {
+            LOG.info("Issuer keystore: {}", this.keystorePath);
+        } else {
+            LOG.warn(
+                    "Issuer keystore not found at {}; a new one will be "
+                            + "created there. Set SSDCVE_KEYSTORE_PATH to "
+                            + "reuse an existing key.",
+                    this.keystorePath
+            );
+        }
     }
 
     public KeyPair generateEd25519KeyPair()

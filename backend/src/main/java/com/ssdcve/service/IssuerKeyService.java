@@ -40,13 +40,6 @@ public class IssuerKeyService {
                                 "Issuer not found: " + issuerId
                         ));
 
-        /*
-         * Key rotation: exactly one active signing key per issuer
-         * (findByIssuerIdAndActiveTrue assumes this invariant).
-         * Deactivate any previous key before activating the new one.
-         */
-        issuerKeyRepository.deactivateByIssuerId(issuerId);
-
         KeyPair keyPair =
                 keyStoreService.generateEd25519KeyPair();
 
@@ -82,6 +75,8 @@ public class IssuerKeyService {
             );
 
             privateKeyStored = true;
+
+            issuerKeyRepository.deactivateByIssuerId(issuerId);
 
             issuerKey.setActive(true);
 

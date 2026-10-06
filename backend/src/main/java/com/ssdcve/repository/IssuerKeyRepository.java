@@ -16,6 +16,8 @@ public interface IssuerKeyRepository extends JpaRepository<IssuerKey, UUID> {
 
     Optional<IssuerKey> findByIssuerIdAndActiveTrue(UUID issuerId);
 
+    Optional<IssuerKey> findFirstByIssuerIdAndActiveTrueOrderByCreatedAtDesc(UUID issuerId);
+
     boolean existsByKeyId(String keyId);
 
     @Modifying
