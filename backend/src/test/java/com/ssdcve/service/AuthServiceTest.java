@@ -6,6 +6,7 @@ import com.ssdcve.dto.response.UserResponse;
 import com.ssdcve.model.RefreshToken;
 import com.ssdcve.model.Role;
 import com.ssdcve.model.User;
+import com.ssdcve.repository.IssuerRepository;
 import com.ssdcve.repository.RefreshTokenRepository;
 import com.ssdcve.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -32,6 +33,7 @@ class AuthServiceTest {
 
     private UserRepository userRepository;
     private RefreshTokenRepository refreshTokenRepository;
+    private IssuerRepository issuerRepository;
     private JwtUtil jwtUtil;
     private AuthService service;
     private BCryptPasswordEncoder encoder;
@@ -48,6 +50,9 @@ class AuthServiceTest {
         refreshTokenRepository =
                 mock(RefreshTokenRepository.class);
 
+        issuerRepository =
+                mock(IssuerRepository.class);
+
         jwtUtil =
                 new JwtUtil(JWT_SECRET, 15);
 
@@ -55,6 +60,7 @@ class AuthServiceTest {
                 new AuthService(
                         userRepository,
                         refreshTokenRepository,
+                        issuerRepository,
                         jwtUtil,
                         7
                 );
@@ -167,7 +173,7 @@ class AuthServiceTest {
         assertNotNull(tokens.rawRefreshToken());
         assertEquals(userId, tokens.userId());
         assertEquals(Role.HOLDER, tokens.role());
-        assertEquals(7L * 24 * 60 * 60, tokens.expiresInSeconds());
+        assertEquals(15 * 60L, tokens.expiresInSeconds());
 
         /*
          * The DB must store the SHA-256 hash, never the raw token.

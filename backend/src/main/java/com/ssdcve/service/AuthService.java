@@ -2,11 +2,12 @@ package com.ssdcve.service;
 
 import com.ssdcve.dto.request.LoginRequest;
 import com.ssdcve.dto.request.RegisterRequest;
-import com.ssdcve.dto.response.AuthResponse;
 import com.ssdcve.dto.response.UserResponse;
+import com.ssdcve.model.Issuer;
 import com.ssdcve.model.RefreshToken;
 import com.ssdcve.model.Role;
 import com.ssdcve.model.User;
+import com.ssdcve.repository.IssuerRepository;
 import com.ssdcve.repository.RefreshTokenRepository;
 import com.ssdcve.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final IssuerRepository issuerRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final SecureRandom secureRandom;
@@ -37,12 +39,14 @@ public class AuthService {
     public AuthService(
             UserRepository userRepository,
             RefreshTokenRepository refreshTokenRepository,
+            IssuerRepository issuerRepository,
             JwtUtil jwtUtil,
-            @Value("${ssdcve.auth.refresh-token-ttl-days}")
+            @Value("${ssdcve.auth.refresh-token-ttl-days:7}")
             long refreshTokenTtlDays) {
 
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.issuerRepository = issuerRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
         this.jwtUtil = jwtUtil;
         this.secureRandom = new SecureRandom();
@@ -61,21 +65,62 @@ public class AuthService {
         String email =
                 request.email().trim().toLowerCase();
 
-        if (userRepository.existsByEmail(email)) {
+        /*
+         * Self-registration is always HOLDER. The role on the request is
+         * advisory only: trusting it would let anyone mint themselves an
+         * ADMIN, and would let them skip the issuer approval flow in
+         * IssuerService.register by self-provisioning a verified issuer.
+         * Privileged accounts are provisioned out of band via
+         * provisionUser or promoted by an administrator.
+         */
+        return provisionUser(
+                email,
+                request.password(),
+                request.fullName(),
+                Role.HOLDER,
+                false
+        );
+    }
+
+    /**
+     * Creates a user with an explicitly assigned role, provisioning a
+     * pre-verified issuer record when requested. This is the only path
+     * that may grant a role other than HOLDER and it is not exposed over
+     * HTTP.
+     *
+     * <p>Idempotent by email: re-running against a database that already
+     * contains the account raises IllegalArgumentException rather than a
+     * constraint violation.
+     */
+    @Transactional
+    public UserResponse provisionUser(
+            String email,
+            String password,
+            String fullName,
+            Role role,
+            boolean provisionVerifiedIssuer) {
+
+        String normalizedEmail = email.trim().toLowerCase();
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new IllegalArgumentException(
                     "Email already registered"
             );
         }
 
         User user = new User();
-        user.setEmail(email);
+        user.setEmail(normalizedEmail);
         user.setPasswordHash(
-                passwordEncoder.encode(request.password())
+                passwordEncoder.encode(password)
         );
-        user.setFullName(request.fullName());
-        user.setRole(Role.HOLDER);
+        user.setFullName(fullName);
+        user.setRole(role);
 
         User saved = userRepository.save(user);
+
+        if (role == Role.ISSUER && provisionVerifiedIssuer) {
+            ensureVerifiedIssuer(saved);
+        }
 
         return new UserResponse(
                 saved.getId(),
@@ -83,6 +128,64 @@ public class AuthService {
                 saved.getFullName(),
                 saved.getRole()
         );
+    }
+
+    /**
+     * Grants ISSUER to an existing account and gives it a verified
+     * issuer record, so the promoted user can issue immediately.
+     * Reached only from the admin API.
+     */
+    @Transactional
+    public UserResponse promoteToIssuer(UUID userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "User not found: " + userId
+                        ));
+
+        if (user.getRole() == Role.ADMIN) {
+            throw new IllegalArgumentException(
+                    "An administrator cannot be promoted to issuer"
+            );
+        }
+
+        if (user.getRole() == Role.ISSUER) {
+            throw new IllegalArgumentException(
+                    "User is already an issuer"
+            );
+        }
+
+        user.setRole(Role.ISSUER);
+        User saved = userRepository.save(user);
+
+        ensureVerifiedIssuer(saved);
+
+        return new UserResponse(
+                saved.getId(),
+                saved.getEmail(),
+                saved.getFullName(),
+                saved.getRole()
+        );
+    }
+
+    private void ensureVerifiedIssuer(User user) {
+
+        if (issuerRepository.existsByUserId(user.getId())) {
+            return;
+        }
+
+        Issuer issuer = new Issuer();
+        issuer.setUser(user);
+        issuer.setName(user.getFullName());
+
+        String domain = "ssdcve.org";
+        if (user.getEmail() != null && user.getEmail().contains("@")) {
+            domain = user.getEmail().substring(user.getEmail().indexOf("@") + 1);
+        }
+        issuer.setDomain(domain);
+        issuer.setVerified(true);
+        issuerRepository.save(issuer);
     }
 
     @Transactional
@@ -173,7 +276,7 @@ public class AuthService {
                         stored.getUser().getRole()
                 ),
                 replacement.getRawToken(),
-                refreshTokenTtlDays * 24 * 60 * 60,
+                jwtUtil.accessTokenTtlSeconds(),
                 stored.getUser().getId(),
                 stored.getUser().getEmail(),
                 stored.getUser().getFullName(),
@@ -217,7 +320,7 @@ public class AuthService {
                         user.getRole()
                 ),
                 refreshToken.getRawToken(),
-                refreshTokenTtlDays * 24 * 60 * 60,
+                jwtUtil.accessTokenTtlSeconds(),
                 user.getId(),
                 user.getEmail(),
                 user.getFullName(),

@@ -3,6 +3,7 @@ package com.ssdcve.controller;
 import com.ssdcve.dto.response.AdminIssuerResponse;
 import com.ssdcve.dto.response.AdminUserResponse;
 import com.ssdcve.dto.response.AdminVerificationResponse;
+import com.ssdcve.dto.response.UserResponse;
 import com.ssdcve.service.AdminService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,18 @@ public class AdminController {
 
         return ResponseEntity.ok(
                 adminService.verifyIssuer(id)
+        );
+    }
+
+    @PostMapping(
+            value = "/users/{id}/promote-issuer",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<UserResponse> promoteIssuer(
+            @PathVariable UUID id) {
+
+        return ResponseEntity.ok(
+                adminService.promoteToIssuer(id)
         );
     }
 

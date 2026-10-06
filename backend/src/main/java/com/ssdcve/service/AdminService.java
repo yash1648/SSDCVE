@@ -3,6 +3,7 @@ package com.ssdcve.service;
 import com.ssdcve.dto.response.AdminIssuerResponse;
 import com.ssdcve.dto.response.AdminUserResponse;
 import com.ssdcve.dto.response.AdminVerificationResponse;
+import com.ssdcve.dto.response.UserResponse;
 import com.ssdcve.model.Credential;
 import com.ssdcve.model.Issuer;
 import com.ssdcve.model.User;
@@ -28,18 +29,28 @@ import java.util.UUID;
 public class AdminService {
 
     private final IssuerRepository issuerRepository;
-
     private final UserRepository userRepository;
-
     private final VerificationRecordRepository recordRepository;
+    private final AuthService authService;
 
     public AdminService(
             IssuerRepository issuerRepository,
             UserRepository userRepository,
-            VerificationRecordRepository recordRepository) {
+            VerificationRecordRepository recordRepository,
+            AuthService authService) {
         this.issuerRepository = issuerRepository;
         this.userRepository = userRepository;
         this.recordRepository = recordRepository;
+        this.authService = authService;
+    }
+
+    /**
+     * Grants issuer authority to an existing account. Delegated to
+     * AuthService, which owns the role and issuer-record rules.
+     */
+    @Transactional
+    public UserResponse promoteToIssuer(UUID userId) {
+        return authService.promoteToIssuer(userId);
     }
 
     @Transactional(readOnly = true)
