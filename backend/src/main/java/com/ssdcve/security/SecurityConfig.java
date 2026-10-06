@@ -1,5 +1,6 @@
 package com.ssdcve.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -8,15 +9,25 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final RateLimitFilter rateLimitFilter;
+    private final boolean swaggerEnabled;
 
-    public SecurityConfig(JwtFilter jwtFilter) {
+    public SecurityConfig(
+            JwtFilter jwtFilter,
+            RateLimitFilter rateLimitFilter,
+            @Value("${ssdcve.swagger.enabled:true}")
+            boolean swaggerEnabled) {
+
         this.jwtFilter = jwtFilter;
+        this.rateLimitFilter = rateLimitFilter;
+        this.swaggerEnabled = swaggerEnabled;
     }
 
     @Bean
@@ -31,40 +42,68 @@ public class SecurityConfig {
                                 SessionCreationPolicy.STATELESS
                         )
                 )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
+                .headers(headers -> headers
+                        .httpStrictTransportSecurity(hsts ->
+                                hsts.includeSubDomains(true)
+                                        .preload(true)
+                        )
+                        .referrerPolicy(referrer ->
+                                referrer.policy(
+                                        ReferrerPolicyHeaderWriter
+                                                .ReferrerPolicy
+                                                .NO_REFERRER
+                                )
+                        )
+                        .contentSecurityPolicy(csp ->
+                                csp.policyDirectives(
+                                        "default-src 'self'"
+                                )
+                        )
+                )
+                .authorizeHttpRequests(auth -> {
+
+                    if (swaggerEnabled) {
+
+                        auth.requestMatchers(
+                                "/v3/api-docs",
                                 "/v3/api-docs/**",
                                 "/v3/api-docs.yaml",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
-                        )
-                        .permitAll()
-                        .requestMatchers("/api/auth/**")
-                        .permitAll()
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/verifier/verify"
-                        )
-                        .permitAll()
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/verifier/verify/**"
-                        )
-                        .permitAll()
-                        .requestMatchers("/api/issuer/**")
-                        .hasAnyRole("ISSUER", "ADMIN")
-                        .requestMatchers("/api/holder/**")
-                        .hasAnyRole("HOLDER", "ADMIN")
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/verifier/history"
-                        )
-                        .authenticated()
-                        .requestMatchers("/api/admin/**")
-                        .hasRole("ADMIN")
-                        .anyRequest()
-                        .authenticated()
-                )
+                        ).permitAll();
+                    }
+
+                    auth.requestMatchers("/api/auth/**")
+                            .permitAll()
+                            .requestMatchers("/error")
+                            .permitAll()
+                            .requestMatchers(
+                                    HttpMethod.POST,
+                                    "/api/verifier/verify",
+                                    "/api/verifier/verify/batch",
+                                    "/api/verifier/verify/batch/csv"
+                            )
+                            .permitAll()
+                            .requestMatchers(
+                                    HttpMethod.GET,
+                                    "/api/verifier/anchor/**",
+                                    "/api/verifier/verify/**"
+                            )
+                            .permitAll()
+                            .requestMatchers("/api/issuer/**")
+                            .hasAnyRole("ISSUER", "ADMIN")
+                            .requestMatchers("/api/holder/**")
+                            .hasAnyRole("HOLDER", "ADMIN")
+                            .requestMatchers(
+                                    HttpMethod.GET,
+                                    "/api/verifier/history"
+                            )
+                            .authenticated()
+                            .requestMatchers("/api/admin/**")
+                            .hasRole("ADMIN")
+                            .anyRequest()
+                            .authenticated();
+                })
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(
                                 (request, response, authException) -> {
@@ -88,6 +127,10 @@ public class SecurityConfig {
                                     );
                                 }
                         )
+                )
+                .addFilterBefore(
+                        rateLimitFilter,
+                        UsernamePasswordAuthenticationFilter.class
                 )
                 .addFilterBefore(
                         jwtFilter,

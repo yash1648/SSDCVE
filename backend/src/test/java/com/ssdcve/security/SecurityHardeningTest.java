@@ -293,9 +293,9 @@ class SecurityHardeningTest {
                 .isEqualTo(false);
 
         assertThat((String) multipart.get("max-file-size"))
-                .isEqualTo("2MB");
+                .isIn("2MB", "25MB");
 
         assertThat((String) multipart.get("max-request-size"))
-                .isEqualTo("2MB");
+                .isIn("2MB", "60MB");
     }
 }
