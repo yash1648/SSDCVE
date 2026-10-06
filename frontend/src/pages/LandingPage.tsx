@@ -36,7 +36,7 @@ export const LandingPage: React.FC = () => {
   } = useQuery({
     queryKey: ['chain-status'],
     queryFn: verifierApi.getChainStatus,
-    refetchInterval: 30000,
+    staleTime: 60000,
     retry: false,
   });
 
@@ -47,7 +47,7 @@ export const LandingPage: React.FC = () => {
   } = useQuery({
     queryKey: ['recent-anchors', 5],
     queryFn: () => verifierApi.getRecentAnchors(5),
-    refetchInterval: 30000,
+    staleTime: 60000,
     retry: false,
   });
 
