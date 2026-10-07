@@ -24,3 +24,10 @@ build/
 *.log
 # Agent temp state
 .tmp/
+
+# Local agent instructions and tooling — machine-specific, not for GitHub
+AGENTS.md
+CLAUDE.md
+RETICLE.md
+.claude/
+.opencode/
