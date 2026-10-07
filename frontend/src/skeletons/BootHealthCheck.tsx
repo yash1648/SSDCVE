@@ -122,7 +122,7 @@ export const BootHealthCheck: React.FC = () => {
         <button
           onClick={runPlumbingHealthCheck}
           disabled={state.status === 'running'}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white transition-all shadow-lg shadow-emerald-950/40"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] cursor-pointer disabled:pointer-events-none disabled:bg-slate-800 disabled:text-slate-600 text-white transition-all duration-200 shadow-sm shadow-emerald-950/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
         >
           {state.status === 'running' ? (
             <Loader2 className="w-4 h-4 animate-spin" />

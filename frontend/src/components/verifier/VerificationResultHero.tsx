@@ -1,5 +1,6 @@
 import React from 'react';
-import { Check, X, BadgeCheck } from 'lucide-react';
+import { Check, X, BadgeCheck, RotateCcw } from 'lucide-react';
+import { Button } from '../ui/button';
 import { ResultSeal } from './ResultSeal';
 import { GlossaryTerm } from './GlossaryTerm';
 import { HashDisplay } from '../common/HashDisplay';
@@ -108,13 +109,16 @@ export const VerificationResultHero: React.FC<VerificationResultHeroProps> = ({
         </dl>
         {onReset && (
           <div className="pt-4">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={onReset}
-              className="text-sm font-semibold text-primary hover:underline"
+              className="gap-1.5 font-semibold"
             >
+              <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
               {resetLabel}
-            </button>
+            </Button>
           </div>
         )}
       </div>

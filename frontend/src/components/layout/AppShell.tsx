@@ -32,7 +32,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, title }) => {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted"
+                className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-all duration-200 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Close menu"
               >
                 <X className="w-5 h-5" />

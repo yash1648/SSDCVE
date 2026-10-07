@@ -454,7 +454,7 @@ export const IssueCredentialWizard: React.FC<IssueCredentialWizardProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRemoveClaim(claim.id)}
-                  className="h-9 w-9 p-0 text-muted-foreground hover:text-destructive"
+                  className="h-9 w-9 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

@@ -13,7 +13,6 @@ import {
   FileBadge,
   FileText,
   ExternalLink,
-  X,
   AlertCircle,
 } from 'lucide-react';
 import {
@@ -142,8 +141,8 @@ export const CredentialManageModal: React.FC<CredentialManageModalProps> = ({
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto p-6 space-y-6">
-        <DialogHeader className="flex flex-row items-start justify-between border-b pb-4">
-          <div className="space-y-1 text-left">
+        <DialogHeader className="border-b pb-4 text-left">
+          <div className="space-y-1 pr-8">
             <div className="flex items-center gap-2">
               <Badge
                 variant={credential.status === 'ACTIVE' ? 'default' : 'destructive'}
@@ -158,14 +157,6 @@ export const CredentialManageModal: React.FC<CredentialManageModalProps> = ({
               Issued by {credential.issuerName} ({credential.issuerDomain})
             </DialogDescription>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close modal"
-            className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>

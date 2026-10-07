@@ -50,7 +50,7 @@ export const HashDisplay: React.FC<HashDisplayProps> = ({
         onClick={handleCopy}
         title="Copy full hash to clipboard"
         aria-label="Copy to clipboard"
-        className="p-1 text-muted-foreground hover:text-foreground transition-colors rounded hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="p-1 text-muted-foreground hover:text-primary transition-all duration-200 rounded-md hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background active:scale-95 cursor-pointer"
       >
         {copied ? (
           <Check className="w-3.5 h-3.5 text-emerald-500" />

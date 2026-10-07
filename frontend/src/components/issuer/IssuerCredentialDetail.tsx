@@ -17,7 +17,6 @@ import {
   Upload,
   Ban,
   Loader2,
-  X,
   AlertCircle,
   Download,
   Shield,
@@ -114,8 +113,8 @@ export const IssuerCredentialDetail: React.FC<IssuerCredentialDetailProps> = ({
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6 space-y-6">
-        <DialogHeader className="flex flex-row items-start justify-between border-b pb-4">
-          <div className="space-y-2 text-left">
+        <DialogHeader className="border-b pb-4 text-left">
+          <div className="space-y-2 pr-8">
             <DialogTitle className="text-xl font-bold text-foreground tabular-nums">
               {credential.credentialNumber}
             </DialogTitle>
@@ -126,14 +125,6 @@ export const IssuerCredentialDetail: React.FC<IssuerCredentialDetailProps> = ({
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close modal"
-            className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </DialogHeader>
 
         <div className="space-y-6">

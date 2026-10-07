@@ -64,7 +64,7 @@ export const Navbar: React.FC = () => {
           {/* Mobile Menu Button */}
           <button
             type="button"
-            className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted min-h-[44px] min-w-[44px] flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={mobileMenuOpen}
@@ -79,9 +79,9 @@ export const Navbar: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground hidden sm:inline">{user.fullName}</span>
               <Badge>{user.role}</Badge>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <Button variant="ghost" size="sm" onClick={handleLogout} aria-label="Logout">
                 <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Sign out</span>
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           ) : (

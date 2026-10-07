@@ -282,27 +282,28 @@ export const HolderLanding: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setManageTarget({ cred: c, tab: 'privacy' })}
-                        className="px-2 gap-1.5"
+                        className="text-xs h-8 px-2 gap-1 font-medium"
+                        title="Selective Disclosure"
                       >
-                        <Lock className="w-3.5 h-3.5" />
-                        Selective Disclosure
+                        <Lock className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Privacy</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setManageTarget({ cred: c, tab: 'share' })}
-                        className="text-xs h-8 px-2 gap-1"
+                        className="text-xs h-8 px-2 gap-1 font-medium"
                       >
-                        <QrCode className="w-3.5 h-3.5" />
+                        <QrCode className="w-3.5 h-3.5 shrink-0" />
                         Share
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setManageTarget({ cred: c, tab: 'download' })}
-                        className="px-2 gap-1.5 font-semibold"
+                        className="text-xs h-8 px-2 gap-1 font-semibold"
                       >
-                        <Download className="w-3.5 h-3.5" />
+                        <Download className="w-3.5 h-3.5 shrink-0" />
                         Files
                       </Button>
                     </div>
@@ -316,7 +317,7 @@ export const HolderLanding: React.FC = () => {
                           onClick={() =>
                             setConfirmingRemoveId((prev) => ({ ...prev, [c.credentialId]: true }))
                           }
-                          className="w-full text-muted-foreground hover:text-destructive text-xs h-7 gap-1.5"
+                          className="w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-xs h-7 gap-1.5 transition-all duration-200"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           Remove from wallet

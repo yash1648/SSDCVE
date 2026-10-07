@@ -147,7 +147,7 @@ export const VerificationsAuditTable: React.FC<VerificationsAuditTableProps> = (
               setStartDate('');
               setEndDate('');
             }}
-            className="text-xs text-primary hover:text-primary/80 font-medium ml-auto"
+            className="text-xs text-primary hover:text-primary/90 font-medium ml-auto transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md px-2 py-1 hover:bg-primary/10 active:scale-95"
           >
             Clear filters
           </button>

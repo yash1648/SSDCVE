@@ -4,6 +4,7 @@ import { getRoleDashboardPath } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { ModeToggle } from '../common/ModeToggle';
 import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 import { LogOut, User, Menu, LayoutDashboard } from 'lucide-react';
 
 interface TopbarProps {
@@ -38,7 +39,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileMenu, title }) => 
         <button
           type="button"
           onClick={onToggleMobileMenu}
-          className="lg:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="lg:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted min-h-[44px] min-w-[44px] flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           aria-label="Open navigation menu"
         >
           <Menu className="w-5 h-5" />
@@ -55,6 +56,16 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileMenu, title }) => 
             <Badge className="text-[10px] font-bold px-2 py-0.5">
               {user.role}
             </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={logout}
+              className="gap-1.5 text-xs text-muted-foreground hover:text-foreground h-8 px-2.5"
+              aria-label="Logout"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Logout</span>
+            </Button>
             <div className="relative" ref={menuRef}>
               <button
                 type="button"
@@ -62,7 +73,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileMenu, title }) => 
                 aria-haspopup="menu"
                 aria-expanded={menuOpen}
                 aria-label="Account menu"
-                className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center text-foreground font-semibold text-xs hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center text-foreground font-semibold text-xs hover:bg-muted/90 hover:border-primary/50 transition-all duration-200 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 {user.fullName ? user.fullName[0].toUpperCase() : <User className="w-4 h-4" />}
               </button>
@@ -79,7 +90,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileMenu, title }) => 
                     to={getRoleDashboardPath(user.role)}
                     role="menuitem"
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2 px-2.5 py-2 rounded-md text-xs font-medium text-foreground hover:bg-muted"
+                    className="flex items-center gap-2 px-2.5 py-2 rounded-md text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer"
                   >
                     <LayoutDashboard className="w-3.5 h-3.5" />
                     My dashboard
@@ -91,7 +102,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileMenu, title }) => 
                       setMenuOpen(false);
                       logout();
                     }}
-                    className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                    className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer active:bg-muted/80"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     Sign out

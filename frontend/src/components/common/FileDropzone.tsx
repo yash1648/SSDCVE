@@ -115,7 +115,7 @@ export const FileDropzone: React.FC<FileDropzoneProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={onClear}
-                className="h-6 px-2 text-xs text-rose-500 hover:text-rose-600"
+                className="h-6 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
               >
                 Clear all
               </Button>

@@ -97,7 +97,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           <button
             type="button"
             onClick={() => setCollapsed((prev) => !prev)}
-            className="p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted"
+            className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-all duration-200 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
