@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "origin": "failed-assert",
+  "expected": "declared consequence",
+  "observed": "no element matched {\"by\":\"role\",\"value\":\"tabpanel\",\"name\":\"Activity\"}",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e154",
+        "source": {
+          "file": "src/pages/IssuerLanding.tsx",
+          "line": 195,
+          "column": 6
+        }
+      },
+      "action": "click"
+    }
+  ],
+  "id": "1791344887737-click-ab315b1c",
+  "createdAt": 1791344887738,
+  "seen": 1,
+  "lastSeenAt": 1791344887738
+}

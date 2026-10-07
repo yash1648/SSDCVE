@@ -1,0 +1,187 @@
+{
+  "version": 2,
+  "name": "drive-post-document-issuer-lease123",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791345030187,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "tab",
+        "name": "Credentials (8)"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "by": "role",
+          "value": "tab",
+          "name": "Credentials"
+        }
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "row",
+        "name": "SSD-CVE-2026-4176D9 Bachelor of Engineering in Distributed Systems 1791312223573 UAT Student 1791312223573 DegreeCertificate ACTIVE #10 Oct 7, 2026 12:14:04 AM"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "by": "role",
+          "value": "dialog"
+        }
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "Select document to attach"
+      },
+      "args": {},
+      "action": "click"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "Select document to attach"
+      },
+      "args": {
+        "name": "test-doc.pdf",
+        "content": "dGVzdCBkb2N1bWVudCBjb250ZW50",
+        "type": "application/pdf"
+      },
+      "action": "upload",
+      "expect": {
+        "kind": "net",
+        "method": "POST",
+        "urlContains": "/document",
+        "status": 200
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Attach Document"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "net",
+        "method": "POST",
+        "urlContains": "/document",
+        "status": 200
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Revoke"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "by": "role",
+          "value": "dialog"
+        }
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "Reason (optional)"
+      },
+      "args": {
+        "value": "Test revocation for verification"
+      },
+      "action": "fill"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Revoke"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "net",
+        "method": "POST",
+        "urlContains": "/revoke",
+        "status": 200
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Close modal"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "by": "role",
+          "value": "dialog"
+        },
+        "absent": true
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "tab",
+        "name": "Activity (8)"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "by": "role",
+          "value": "tabpanel",
+          "name": "Activity"
+        }
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "tab",
+        "name": "Activity (8)"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "net",
+        "method": "GET",
+        "urlContains": "/verifications",
+        "status": 200
+      }
+    }
+  ],
+  "startPath": "/issuer"
+}

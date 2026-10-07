@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "name": "drive-email-is-required-login-sd888932",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791316314830,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Sign in"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "allOf",
+        "predicates": [
+          {
+            "kind": "text",
+            "contains": "Email is required"
+          },
+          {
+            "kind": "text",
+            "contains": "Password is required"
+          }
+        ]
+      }
+    }
+  ],
+  "startPath": "/login"
+}

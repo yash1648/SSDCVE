@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "origin": "failed-assert",
+  "expected": "declared consequence",
+  "observed": "no element matched {\"text\":\"Blockchain\"}",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e451",
+        "source": {
+          "file": "src/components/common/Navbar.tsx",
+          "line": 41,
+          "column": 10
+        }
+      },
+      "action": "click"
+    }
+  ],
+  "id": "1791312404679-click-13450db1",
+  "createdAt": 1791312404679,
+  "seen": 1,
+  "lastSeenAt": 1791312404679
+}

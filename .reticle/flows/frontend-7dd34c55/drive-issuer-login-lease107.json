@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "name": "drive-issuer-login-lease107",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791342784728,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "Email address"
+      },
+      "args": {
+        "value": "test-issuer-20261007@test.edu"
+      },
+      "action": "fill",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "role": "textbox",
+          "name": "Email address"
+        },
+        "state": "enabled"
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "Password"
+      },
+      "args": {
+        "value": "<redacted: supply at replay>"
+      },
+      "action": "fill",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "role": "textbox",
+          "name": "Password"
+        },
+        "state": "enabled"
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Sign in"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "pathname": "/issuer"
+      }
+    }
+  ],
+  "startPath": "/login"
+}

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "id": "1791259425531-click-c818d446",
+  "createdAt": 1791259425531,
+  "origin": "failed-assert",
+  "expected": "route ?",
+  "observed": "current route (no route change in the window) '/login?__reticle_session=lease-ea811198-5ac2-4d5c-b377-6a27b9028838' does not contain '/admin'",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e13",
+        "source": {
+          "file": "src/pages/LoginPage.tsx",
+          "line": 73,
+          "column": 10
+        }
+      },
+      "action": "click"
+    }
+  ],
+  "seen": 2,
+  "lastSeenAt": 1791259450192
+}

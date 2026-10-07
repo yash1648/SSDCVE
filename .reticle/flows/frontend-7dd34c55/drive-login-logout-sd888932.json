@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "name": "drive-login-logout-sd888932",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791321444506,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "link",
+        "name": "Back home"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "pathname": "/login"
+      }
+    }
+  ],
+  "startPath": "/logout"
+}

@@ -1,0 +1,97 @@
+{
+  "version": 2,
+  "name": "drive-login-register-lease107",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791342678065,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "Full Name"
+      },
+      "args": {
+        "value": "Test Issuer"
+      },
+      "action": "fill",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "role": "textbox",
+          "name": "Full Name"
+        },
+        "state": "enabled"
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "Email Address"
+      },
+      "args": {
+        "value": "test-issuer-20261007@test.edu"
+      },
+      "action": "fill",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "role": "textbox",
+          "name": "Email Address"
+        },
+        "state": "enabled"
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "Password (8–72 characters)"
+      },
+      "args": {
+        "value": "<redacted: supply at replay>"
+      },
+      "action": "fill",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "role": "textbox",
+          "name": "Password (8–72 characters)"
+        },
+        "state": "enabled"
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Create Account"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "pathname": "/login"
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Proceed to Login"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "pathname": "/login"
+      }
+    }
+  ],
+  "startPath": "/register"
+}

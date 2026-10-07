@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "origin": "failed-assert",
+  "expected": "net",
+  "observed": "no request to /verifications",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e154",
+        "source": {
+          "file": "src/pages/IssuerLanding.tsx",
+          "line": 195,
+          "column": 6
+        }
+      },
+      "action": "click"
+    }
+  ],
+  "id": "1791344927386-click-93082fe0",
+  "createdAt": 1791344927386,
+  "seen": 1,
+  "lastSeenAt": 1791344927386
+}

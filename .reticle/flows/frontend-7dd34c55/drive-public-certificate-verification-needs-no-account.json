@@ -1,0 +1,82 @@
+{
+  "version": 2,
+  "name": "drive-public-certificate-verification-needs-no-account",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791258824384,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "link",
+        "name": "Verify a certificate"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "allOf",
+        "predicates": [
+          {
+            "kind": "text",
+            "contains": "Verify a certificate"
+          },
+          {
+            "kind": "not",
+            "predicate": {
+              "kind": "text",
+              "contains": "6969"
+            }
+          },
+          {
+            "kind": "not",
+            "predicate": {
+              "kind": "text",
+              "contains": "/api/"
+            }
+          },
+          {
+            "kind": "not",
+            "predicate": {
+              "kind": "text",
+              "contains": "TestPass"
+            }
+          },
+          {
+            "kind": "not",
+            "predicate": {
+              "kind": "text",
+              "contains": "Ed25519"
+            }
+          },
+          {
+            "kind": "not",
+            "predicate": {
+              "kind": "text",
+              "contains": "SHA-256"
+            }
+          }
+        ]
+      },
+      "page": "/",
+      "endPage": "/verify"
+    }
+  ],
+  "startPath": "/",
+  "intent": "public certificate verification needs no account — the landing page links to /verify",
+  "requires": [
+    {
+      "kind": "route",
+      "pathname": "/"
+    }
+  ],
+  "ensures": [
+    {
+      "kind": "route",
+      "pathname": "/verify"
+    }
+  ],
+  "author": {
+    "agent": "opencode"
+  },
+  "intentId": "flow:drive-public-certificate-verification-needs-no-account"
+}

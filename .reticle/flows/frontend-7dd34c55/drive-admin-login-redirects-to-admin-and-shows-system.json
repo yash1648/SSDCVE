@@ -1,0 +1,99 @@
+{
+  "version": 2,
+  "name": "drive-admin-login-redirects-to-admin-and-shows-system",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791259725643,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Sign in"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "contains": "/admin"
+      },
+      "page": "/login",
+      "endPage": "/admin"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Approve"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "net",
+        "urlContains": "/verify"
+      },
+      "page": "/admin"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "tab",
+        "name": "Accounts (403)"
+      },
+      "args": {},
+      "action": "click",
+      "page": "/admin"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Grant issuing"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "net",
+        "urlContains": "/promote-issuer"
+      },
+      "page": "/admin"
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Sign out"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "contains": "/login"
+      },
+      "page": "/admin",
+      "endPage": "/login"
+    }
+  ],
+  "startPath": "/login",
+  "intent": "Admin login redirects to /admin and shows System Administration header",
+  "requires": [
+    {
+      "kind": "route",
+      "pathname": "/login"
+    }
+  ],
+  "ensures": [
+    {
+      "kind": "route",
+      "pathname": "/login"
+    }
+  ],
+  "author": {
+    "agent": "opencode"
+  },
+  "intentId": "flow:drive-admin-login-redirects-to-admin-and-shows-system"
+}

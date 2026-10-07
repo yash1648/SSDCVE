@@ -1,0 +1,18 @@
+{
+  "intents": {
+    "flow:drive-signing-in-with-valid-credentials-takes-an-admin": {
+      "declaredAt": 1791258824415,
+      "id": "flow:drive-signing-in-with-valid-credentials-takes-an-admin",
+      "state": "declared",
+      "statement": "signing in with valid credentials takes an admin to the administration dashboard",
+      "status": "proposed",
+      "subject": "drive-signing-in-with-valid-credentials",
+      "surface": {
+        "flow": "drive-signing-in-with-valid-credentials-takes-an-admin"
+      },
+      "updatedAt": 1791258824420
+    }
+  },
+  "subject": "drive-signing-in-with-valid-credentials",
+  "version": 1
+}

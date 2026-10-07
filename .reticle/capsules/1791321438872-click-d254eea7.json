@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "origin": "failed-assert",
+  "expected": "declared consequence",
+  "observed": "route changed to '/', expected '/login'",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e7615",
+        "source": {
+          "file": "src/pages/NotFoundPage.tsx",
+          "line": 8,
+          "column": 4
+        }
+      },
+      "action": "click"
+    }
+  ],
+  "id": "1791321438872-click-d254eea7",
+  "createdAt": 1791321438873,
+  "seen": 1,
+  "lastSeenAt": 1791321438873
+}

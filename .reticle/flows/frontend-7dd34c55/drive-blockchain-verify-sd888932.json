@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "name": "drive-blockchain-verify-sd888932",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791313662337,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "link",
+        "name": "Chain"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "text",
+        "contains": "Blockchain"
+      }
+    }
+  ],
+  "startPath": "/verify"
+}

@@ -1,0 +1,21 @@
+{
+  "intents": {
+    "flow:drive-admin-login-redirects-to-admin-and-shows-system": {
+      "binding": {
+        "flow": "drive-admin-login-redirects-to-admin-and-shows-system"
+      },
+      "declaredAt": 1791259725678,
+      "id": "flow:drive-admin-login-redirects-to-admin-and-shows-system",
+      "state": "bound",
+      "statement": "Admin login redirects to /admin and shows System Administration header",
+      "status": "proposed",
+      "subject": "drive-admin-login-redirects-to-admin-and",
+      "surface": {
+        "flow": "drive-admin-login-redirects-to-admin-and-shows-system"
+      },
+      "updatedAt": 1791259725713
+    }
+  },
+  "subject": "drive-admin-login-redirects-to-admin-and",
+  "version": 1
+}

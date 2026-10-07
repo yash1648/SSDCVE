@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "origin": "failed-assert",
+  "expected": "declared consequence",
+  "observed": "current route (no route change in the window) '/login', expected '/holder'",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e9217",
+        "source": {
+          "file": "src/components/ui/input.tsx",
+          "line": 6,
+          "column": 4
+        }
+      },
+      "action": "fill"
+    }
+  ],
+  "id": "1791346242611-fill-6296692a",
+  "createdAt": 1791346242611,
+  "seen": 1,
+  "lastSeenAt": 1791346242611
+}

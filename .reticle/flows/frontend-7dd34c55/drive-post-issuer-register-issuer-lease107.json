@@ -1,0 +1,62 @@
+{
+  "version": 2,
+  "name": "drive-post-issuer-register-issuer-lease107",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791343194578,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "Organization / Institution Name"
+      },
+      "args": {
+        "value": "New Test University"
+      },
+      "action": "fill",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "label": "Organization / Institution Name"
+        },
+        "state": "enabled"
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "Official Domain"
+      },
+      "args": {
+        "value": "newtest.edu"
+      },
+      "action": "fill",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "label": "Official Domain"
+        },
+        "state": "enabled"
+      }
+    },
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "button",
+        "name": "Register Institution"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "net",
+        "method": "POST",
+        "urlContains": "/issuer/register"
+      }
+    }
+  ],
+  "startPath": "/issuer"
+}

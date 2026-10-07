@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "name": "drive-verify-sd888932",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791313662335,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "link",
+        "name": "Verify"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "route",
+        "pathname": "/verify"
+      }
+    }
+  ],
+  "startPath": "/"
+}

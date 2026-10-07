@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "name": "drive-get-verifications-issuer-lease123",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791345646508,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "tab",
+        "name": "Activity (8)"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "net",
+        "method": "GET",
+        "urlContains": "/verifications",
+        "status": 200
+      }
+    }
+  ],
+  "startPath": "/issuer"
+}

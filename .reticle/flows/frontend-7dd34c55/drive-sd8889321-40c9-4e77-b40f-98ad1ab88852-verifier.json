@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "name": "drive-sd8889321-40c9-4e77-b40f-98ad1ab88852-verifier",
+  "projectId": "frontend-7dd34c55",
+  "createdAt": 1791321381655,
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "role",
+        "role": "tab",
+        "name": "Verify Single"
+      },
+      "args": {},
+      "action": "click",
+      "expect": {
+        "kind": "element",
+        "query": {
+          "role": "tab",
+          "name": "Verify Single"
+        },
+        "state": "visible"
+      }
+    }
+  ],
+  "startPath": "/verifier"
+}

@@ -1,0 +1,18 @@
+{
+  "intents": {
+    "flow:drive-public-certificate-verification-needs-no-account": {
+      "declaredAt": 1791258824386,
+      "id": "flow:drive-public-certificate-verification-needs-no-account",
+      "state": "declared",
+      "statement": "public certificate verification needs no account — the landing page links to /verify",
+      "status": "proposed",
+      "subject": "drive-public-certificate-verification-ne",
+      "surface": {
+        "flow": "drive-public-certificate-verification-needs-no-account"
+      },
+      "updatedAt": 1791258824389
+    }
+  },
+  "subject": "drive-public-certificate-verification-ne",
+  "version": 1
+}

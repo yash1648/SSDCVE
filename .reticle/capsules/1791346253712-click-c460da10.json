@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "origin": "failed-assert",
+  "expected": "declared consequence",
+  "observed": "current route (no route change in the window) '/login', expected '/holder'",
+  "steps": [
+    {
+      "tool": "reticle_act",
+      "anchor": {
+        "kind": "testid",
+        "value": "e9218",
+        "source": {
+          "file": "src/pages/LoginPage.tsx",
+          "line": 77,
+          "column": 10
+        }
+      },
+      "action": "click"
+    }
+  ],
+  "id": "1791346253712-click-c460da10",
+  "createdAt": 1791346253712,
+  "seen": 1,
+  "lastSeenAt": 1791346253712
+}
