@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShieldCheck, LogOut, LogIn, UserPlus, LayoutDashboard } from 'lucide-react';
+import { ShieldCheck, LogOut, LogIn, UserPlus, LayoutDashboard, Menu, X } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ export const Navbar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -29,6 +30,12 @@ export const Navbar: React.FC = () => {
       active ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
     }`;
 
+  const isActive = (path: string) => {
+    if (path === '/verify') return location.pathname.startsWith('/verify');
+    if (path === '/chain') return location.pathname.startsWith('/chain');
+    return location.pathname === path;
+  };
+
   return (
     <header className="border-b bg-background sticky top-0 z-40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
@@ -38,20 +45,32 @@ export const Navbar: React.FC = () => {
             <span className="font-display font-bold tracking-tight">SSDCVE</span>
           </Link>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link to="/verify" className={linkCls(location.pathname.startsWith('/verify'))}>
+            <Link to="/verify" className={linkCls(isActive('/verify'))}>
               Verify
             </Link>
-            <Link to="/chain" className={linkCls(location.pathname.startsWith('/chain'))}>
+            <Link to="/chain" className={linkCls(isActive('/chain'))}>
               Chain
             </Link>
             {isAuthenticated && dashboardPath && (
-              <Link to={dashboardPath} className={linkCls(location.pathname === dashboardPath)}>
+              <Link to={dashboardPath} className={linkCls(isActive(dashboardPath))}>
                 <LayoutDashboard className="w-4 h-4" />
                 Dashboard
               </Link>
             )}
           </nav>
+
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            className="md:hidden p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted min-h-[44px] min-w-[44px] flex items-center justify-center"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -83,6 +102,52 @@ export const Navbar: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-border py-4 px-4 space-y-2">
+          <Link
+            to="/verify"
+            className={linkCls(isActive('/verify'))}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Verify
+          </Link>
+          <Link
+            to="/chain"
+            className={linkCls(isActive('/chain'))}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Chain
+          </Link>
+          {isAuthenticated && dashboardPath && (
+            <Link
+              to={dashboardPath}
+              className={linkCls(isActive(dashboardPath))}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              Dashboard
+            </Link>
+          )}
+          {!isAuthenticated && (
+            <div className="pt-2 border-t border-border space-y-2">
+              <Button variant="ghost" size="sm" asChild className="w-full justify-start">
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <LogIn className="w-4 h-4" />
+                  Sign in
+                </Link>
+              </Button>
+              <Button size="sm" asChild className="w-full justify-start">
+                <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <UserPlus className="w-4 h-4" />
+                  Create account
+                </Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </header>
   );
 };

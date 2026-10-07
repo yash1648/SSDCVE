@@ -14,7 +14,6 @@ import {
   Layers,
   History,
   Activity,
-  Search,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -167,10 +166,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
             <NavLink to="/verifier/batch" title="Batch Verify" className={navItemClass} onClick={onCloseMobile}>
               <Layers className="w-4 h-4 shrink-0" />
               {linkLabel('Batch Verify')}
-            </NavLink>
-            <NavLink to="/verifier/anchor" title="Anchor Lookup" className={navItemClass} onClick={onCloseMobile}>
-              <Search className="w-4 h-4 shrink-0" />
-              {linkLabel('Anchor Lookup')}
             </NavLink>
             <NavLink to="/verifier/history" title="History" className={navItemClass} onClick={onCloseMobile}>
               <History className="w-4 h-4 shrink-0" />
