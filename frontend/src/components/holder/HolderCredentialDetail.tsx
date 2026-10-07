@@ -100,7 +100,7 @@ export const HolderCredentialDetail: React.FC<HolderCredentialDetailProps> = ({
             size="sm"
             onClick={handleDownloadEnvelope}
             disabled={downloadingJson}
-            className="gap-2 h-9 text-xs font-semibold"
+            className="gap-2 text-xs font-semibold"
           >
             {downloadingJson ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             Download JSON
@@ -109,7 +109,7 @@ export const HolderCredentialDetail: React.FC<HolderCredentialDetailProps> = ({
             size="sm"
             onClick={handleDownloadCertificate}
             disabled={downloadingPdf}
-            className="gap-2 h-9 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="gap-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
           >
             {downloadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             Download Certificate PDF

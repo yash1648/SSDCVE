@@ -100,7 +100,7 @@ export const AdminLanding: React.FC = () => {
             size="sm"
             onClick={handleRefreshAll}
             disabled={isRefreshing}
-            className="gap-2 self-start sm:self-auto h-9"
+            className="gap-2 self-start sm:self-auto"
             aria-busy={isRefreshing}
           >
             {isRefreshing ? (

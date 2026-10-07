@@ -122,7 +122,7 @@ export const SelectiveDisclosurePanel: React.FC<SelectiveDisclosurePanelProps> =
             size="sm"
             onClick={handleSave}
             disabled={isSaving}
-            className="gap-1.5 h-8 text-xs font-semibold"
+            className="gap-1.5 font-semibold"
           >
             {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
             Save Privacy

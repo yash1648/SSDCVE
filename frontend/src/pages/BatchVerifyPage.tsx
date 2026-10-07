@@ -21,7 +21,7 @@ export const BatchVerifyPage: React.FC = () => {
           </p>
         </div>
 
-        <Button variant="outline" size="sm" asChild className="gap-2 h-9 self-start sm:self-auto font-semibold">
+        <Button variant="outline" size="sm" asChild className="gap-2 self-start sm:self-auto font-semibold">
           <Link to="/verify">
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
             Single check

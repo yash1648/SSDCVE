@@ -136,7 +136,7 @@ export function DataTable<T>({
                   >
                     <span>{col.header}</span>
                     {col.sortable && (
-                      <ArrowUpDown className="w-3 h-3 text-muted-foreground/70" />
+                      <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground/70" />
                     )}
                   </div>
                 </TableHead>
@@ -237,7 +237,7 @@ export function DataTable<T>({
               size="sm"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="h-8 w-8 p-0"
+              className="w-8 p-0"
               aria-label="Previous page"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -247,7 +247,7 @@ export function DataTable<T>({
               size="sm"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="h-8 w-8 p-0"
+              className="w-8 p-0"
               aria-label="Next page"
             >
               <ChevronRight className="w-4 h-4" />

@@ -282,7 +282,7 @@ export const HolderLanding: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setManageTarget({ cred: c, tab: 'privacy' })}
-                        className="text-xs h-8 px-2 gap-1"
+                        className="px-2 gap-1.5"
                       >
                         <Lock className="w-3.5 h-3.5" />
                         Selective Disclosure
@@ -300,7 +300,7 @@ export const HolderLanding: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setManageTarget({ cred: c, tab: 'download' })}
-                        className="text-xs h-8 px-2 gap-1 font-semibold"
+                        className="px-2 gap-1.5 font-semibold"
                       >
                         <Download className="w-3.5 h-3.5" />
                         Files

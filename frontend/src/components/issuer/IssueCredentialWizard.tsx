@@ -416,7 +416,7 @@ export const IssueCredentialWizard: React.FC<IssueCredentialWizardProps> = ({
               variant="outline"
               size="sm"
               onClick={handleAddClaim}
-              className="gap-1.5 text-xs h-8"
+              className="gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" /> Add Claim
             </Button>

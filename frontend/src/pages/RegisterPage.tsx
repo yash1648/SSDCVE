@@ -200,7 +200,7 @@ export const RegisterPage: React.FC = () => {
             </div>
 
             <Button type="submit" className="w-full font-semibold" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
               Create Account
             </Button>
           </form>

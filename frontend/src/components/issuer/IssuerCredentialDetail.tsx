@@ -285,7 +285,7 @@ export const IssuerCredentialDetail: React.FC<IssuerCredentialDetailProps> = ({
               size="sm"
               onClick={handleDownloadCertificate}
               disabled={currentStatus === 'REVOKED'}
-              className="gap-1.5 text-xs h-8"
+              className="gap-1.5"
             >
               <Download className="w-3.5 h-3.5" />
               Download Certificate

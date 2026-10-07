@@ -97,7 +97,7 @@ export const VerifierHistoryPage: React.FC = () => {
         </p>
         <Error403 />
         <div className="flex justify-center">
-          <Button asChild variant="outline" size="sm" className="gap-2 h-9">
+          <Button asChild variant="outline" size="sm" className="gap-2">
             <Link to="/verifier">
               <ArrowLeft className="w-3.5 h-3.5" />
               Back to verifier workspace
@@ -196,7 +196,7 @@ export const VerifierHistoryPage: React.FC = () => {
 
       {isEmpty && (
         <div className="flex justify-center">
-          <Button asChild size="sm" className="gap-2 h-9">
+          <Button asChild size="sm" className="gap-2">
             <Link to="/verifier">
               <ArrowLeft className="w-3.5 h-3.5" />
               Check a certificate

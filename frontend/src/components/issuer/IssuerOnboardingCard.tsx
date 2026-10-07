@@ -156,7 +156,7 @@ export const IssuerOnboardingCard: React.FC<IssuerOnboardingCardProps> = ({
           </div>
 
           <Button type="submit" className="w-full font-semibold" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" />}
+            {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />}
             Register Institution
           </Button>
         </form>
