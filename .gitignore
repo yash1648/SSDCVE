@@ -24,6 +24,3 @@ build/
 *.log
 # Agent temp state
 .tmp/
-
-# Local agent tooling (vendored skills, machine-specific)
-.opencode/
