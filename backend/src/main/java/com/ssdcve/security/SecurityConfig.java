@@ -87,6 +87,8 @@ public class SecurityConfig {
                             .requestMatchers(
                                     HttpMethod.GET,
                                     "/api/verifier/anchor/**",
+                                    "/api/verifier/anchors/**",
+                                    "/api/verifier/chain/**",
                                     "/api/verifier/verify/**"
                             )
                             .permitAll()

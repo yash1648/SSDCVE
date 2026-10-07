@@ -23,6 +23,18 @@ services:
     volumes:
       - ssdcve_ipfs_data:/data/ipfs
 
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:stable
+    container_name: ssdcve-anvil
+    restart: unless-stopped
+    entrypoint: ["anvil"]
+    command: ["--host", "0.0.0.0", "--state", "/data/state.json"]
+    ports:
+      - "8545:8545"
+    volumes:
+      - ssdcve_anvil_data:/data
+
 volumes:
   ssdcve_postgres_data:
   ssdcve_ipfs_data:
+  ssdcve_anvil_data:

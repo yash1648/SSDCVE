@@ -10,6 +10,49 @@ servers:
 security:
 - bearerAuth: []
 paths:
+  /api/holder/credentials/{id}/disclosure:
+    get:
+      tags:
+      - holder-controller
+      operationId: getDisclosure
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DisclosureResponse"
+    put:
+      tags:
+      - holder-controller
+      operationId: setDisclosure
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DisclosureUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DisclosureResponse"
   /api/verifier/verify:
     post:
       tags:
@@ -34,6 +77,50 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/VerificationResult"
+  /api/verifier/verify/batch:
+    post:
+      tags:
+      - verifier-controller
+      operationId: verifyBatch
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchVerificationResponse"
+  /api/verifier/verify/batch/csv:
+    post:
+      tags:
+      - verifier-controller
+      operationId: exportCsv
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchVerificationResponse"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/csv:
+              schema:
+                type: string
   /api/issuer/register:
     post:
       tags:
@@ -250,6 +337,25 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/AuthResponse"
+  /api/admin/users/{id}/promote-issuer:
+    post:
+      tags:
+      - admin-controller
+      operationId: promoteIssuer
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
   /api/admin/issuers/{id}/verify:
     post:
       tags:
@@ -302,6 +408,58 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/VerificationHistoryResponse"
+  /api/verifier/chain/status:
+    get:
+      tags:
+      - verifier-controller
+      operationId: chainStatus
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChainStatusResponse"
+  /api/verifier/anchors/recent:
+    get:
+      tags:
+      - verifier-controller
+      operationId: recentAnchors
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecentAnchorResponse"
+  /api/verifier/anchor/{credentialNumber}:
+    get:
+      tags:
+      - verifier-controller
+      operationId: anchor
+      parameters:
+      - name: credentialNumber
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnchorLookupResponse"
   /api/issuer/verifications:
     get:
       tags:
@@ -316,6 +474,36 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/VerificationRecordResponse"
+  /api/issuer/me:
+    get:
+      tags:
+      - issuer-controller
+      operationId: me
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/IssuerResponse"
+  /api/issuer/holders:
+    get:
+      tags:
+      - issuer-controller
+      operationId: holder
+      parameters:
+      - name: email
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
   /api/issuer/credentials/{id}:
     get:
       tags:
@@ -433,6 +621,36 @@ paths:
                   $ref: "#/components/schemas/AdminIssuerResponse"
 components:
   schemas:
+    DisclosureUpdateRequest:
+      type: object
+      properties:
+        hiddenClaims:
+          type: array
+          items:
+            type: string
+      required:
+      - hiddenClaims
+    DisclosureResponse:
+      type: object
+      properties:
+        claims:
+          type: object
+          additionalProperties: {}
+        hiddenClaims:
+          type: array
+          items:
+            type: string
+    DisclosureInfo:
+      type: object
+      properties:
+        disclosed:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+        complete:
+          type: boolean
     VerificationResult:
       type: object
       properties:
@@ -472,6 +690,93 @@ components:
         verifiedAt:
           type: string
           format: date-time
+        anchorTxHash:
+          type: string
+        anchorBlockNumber:
+          type: integer
+          format: int64
+        anchorChainId:
+          type: integer
+          format: int64
+        anchorVerified:
+          type: boolean
+        disclosure:
+          $ref: "#/components/schemas/DisclosureInfo"
+    BatchItemResult:
+      type: object
+      properties:
+        fileName:
+          type: string
+        credentialNumber:
+          type: string
+        recipientName:
+          type: string
+        issuerName:
+          type: string
+        status:
+          type: string
+        valid:
+          type: boolean
+        checks:
+          $ref: "#/components/schemas/VerificationChecks"
+        verificationResult:
+          $ref: "#/components/schemas/VerificationResult"
+        errorMessage:
+          type: string
+    BatchVerificationResponse:
+      type: object
+      properties:
+        batchId:
+          type: string
+        total:
+          type: integer
+          format: int32
+        processed:
+          type: integer
+          format: int32
+        valid:
+          type: integer
+          format: int32
+        tampered:
+          type: integer
+          format: int32
+        revoked:
+          type: integer
+          format: int32
+        expired:
+          type: integer
+          format: int32
+        notFound:
+          type: integer
+          format: int32
+        unavailable:
+          type: integer
+          format: int32
+        failed:
+          type: integer
+          format: int32
+        durationMs:
+          type: integer
+          format: int64
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/BatchItemResult"
+    VerificationChecks:
+      type: object
+      properties:
+        envelopeStructure:
+          type: boolean
+        schemaConformance:
+          type: boolean
+        issuerSignature:
+          type: boolean
+        onChainAnchor:
+          type: boolean
+        revocationStatus:
+          type: boolean
+        ipfsIntegrity:
+          type: boolean
     IssuerRegisterRequest:
       type: object
       properties:
@@ -550,12 +855,25 @@ components:
           type: string
         title:
           type: string
+        subjectId:
+          type: string
+          format: uuid
+        subjectName:
+          type: string
         contentHash:
           type: string
         ipfsCid:
           type: string
         documentCid:
           type: string
+        anchorTxHash:
+          type: string
+        anchorBlockNumber:
+          type: integer
+          format: int64
+        anchorChainId:
+          type: integer
+          format: int64
         signature:
           type: string
         signatureAlgorithm:
@@ -617,6 +935,14 @@ components:
           type: string
         issuerDomain:
           type: string
+        anchorTxHash:
+          type: string
+        anchorBlockNumber:
+          type: integer
+          format: int64
+        anchorChainId:
+          type: integer
+          format: int64
         issuedAt:
           type: string
           format: date-time
@@ -747,6 +1073,48 @@ components:
         verifiedAt:
           type: string
           format: date-time
+    ChainStatusResponse:
+      type: object
+      properties:
+        chainId:
+          type: integer
+          format: int64
+        latestBlock:
+          type: integer
+          format: int64
+        anchoredCount:
+          type: integer
+          format: int64
+    RecentAnchorResponse:
+      type: object
+      properties:
+        credentialNumber:
+          type: string
+        issuerName:
+          type: string
+        blockNumber:
+          type: integer
+          format: int64
+        anchoredAt:
+          type: string
+          format: date-time
+    AnchorLookupResponse:
+      type: object
+      properties:
+        credentialNumber:
+          type: string
+        contentHash:
+          type: string
+        txHash:
+          type: string
+        blockNumber:
+          type: integer
+          format: int64
+        chainId:
+          type: integer
+          format: int64
+        anchorVerified:
+          type: boolean
     VerificationRecordResponse:
       type: object
       properties:

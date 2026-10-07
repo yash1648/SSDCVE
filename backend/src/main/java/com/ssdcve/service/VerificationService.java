@@ -2,7 +2,9 @@ package com.ssdcve.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssdcve.dto.response.AnchorLookupResponse;
+import com.ssdcve.dto.response.ChainStatusResponse;
 import com.ssdcve.dto.response.DisclosureInfo;
+import com.ssdcve.dto.response.RecentAnchorResponse;
 import com.ssdcve.dto.response.SignedCredentialEnvelope;
 import com.ssdcve.dto.response.VerificationResult;
 import com.ssdcve.model.Credential;
@@ -17,6 +19,7 @@ import com.ssdcve.repository.CredentialDisclosureRepository;
 import com.ssdcve.repository.CredentialRepository;
 import com.ssdcve.repository.CredentialStatusRepository;
 import com.ssdcve.repository.IssuerKeyRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -424,6 +428,51 @@ public class VerificationService {
                 anchor.getChainId(),
                 anchorVerified
         );
+    }
+
+    /**
+     * Public chain overview: chain id, latest mined block (null when the
+     * node is unreachable), and how many credentials are anchored.
+     */
+    @Transactional(readOnly = true)
+    public ChainStatusResponse chainStatus() {
+
+        Long latestBlock = null;
+
+        try {
+            latestBlock = blockchainAnchorService.latestBlock();
+        } catch (Exception ex) {
+            latestBlock = null;
+        }
+
+        return new ChainStatusResponse(
+                blockchainAnchorService.getChainId(),
+                latestBlock,
+                anchorRepository.count()
+        );
+    }
+
+    /**
+     * Most recently anchored credentials, newest first. Limit is clamped
+     * to 1-100 so a public caller cannot page the whole table.
+     */
+    @Transactional(readOnly = true)
+    public List<RecentAnchorResponse> recentAnchors(int limit) {
+
+        int clamped = Math.min(Math.max(limit, 1), 100);
+
+        return anchorRepository
+                .findAllByOrderByAnchoredAtDesc(
+                        PageRequest.of(0, clamped)
+                )
+                .stream()
+                .map(anchor -> new RecentAnchorResponse(
+                        anchor.getCredential().getCredentialNumber(),
+                        anchor.getCredential().getIssuer().getName(),
+                        anchor.getBlockNumber(),
+                        anchor.getAnchoredAt()
+                ))
+                .toList();
     }
 
     private VerificationResult success(

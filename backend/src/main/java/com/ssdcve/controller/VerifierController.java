@@ -2,7 +2,9 @@ package com.ssdcve.controller;
 
 import com.ssdcve.dto.response.AnchorLookupResponse;
 import com.ssdcve.dto.response.BatchVerificationResponse;
+import com.ssdcve.dto.response.ChainStatusResponse;
 import com.ssdcve.dto.response.DisclosureInfo;
+import com.ssdcve.dto.response.RecentAnchorResponse;
 import com.ssdcve.dto.response.VerificationHistoryResponse;
 import com.ssdcve.dto.response.VerificationResult;
 import com.ssdcve.model.VerificationStatus;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -191,6 +194,28 @@ public class VerifierController {
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(
+            value = "/chain/status",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<ChainStatusResponse> chainStatus() {
+        return ResponseEntity.ok(
+                verificationService.chainStatus()
+        );
+    }
+
+    @GetMapping(
+            value = "/anchors/recent",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<List<RecentAnchorResponse>> recentAnchors(
+            @RequestParam(name = "limit", defaultValue = "20") int limit) {
+
+        return ResponseEntity.ok(
+                verificationService.recentAnchors(limit)
+        );
     }
 
     @GetMapping(

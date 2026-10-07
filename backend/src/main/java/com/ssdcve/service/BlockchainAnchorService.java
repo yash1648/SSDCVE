@@ -65,6 +65,24 @@ public class BlockchainAnchorService {
     }
 
     /**
+     * Latest mined block number, or null when the node is unreachable.
+     */
+     public Long latestBlock()
+            throws IOException, InterruptedException {
+
+        JsonNode result = rpc("eth_blockNumber");
+
+        if (result == null || result.isNull()) {
+            return null;
+        }
+
+        return Long.parseLong(
+                result.asText().substring(2),
+                16
+        );
+    }
+
+    /**
      * Block number containing the transaction, or null if not mined yet.
      */
     public Long getBlockNumber(String txHash)
