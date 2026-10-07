@@ -7,10 +7,10 @@ import type { AdminVerificationResponse } from '../../types/admin';
 type VerificationStatus = AdminVerificationResponse['result'];
 
 const SEAL_CHIP: Record<VerificationStatus, { icon: React.ReactNode; label: string; tone: string }> = {
-  VALID: { icon: <ShieldCheck className="w-3.5 h-3.5" />, label: 'Valid', tone: 'bg-primary/10 text-primary border-primary/20' },
-  TAMPERED: { icon: <ShieldAlert className="w-3.5 h-3.5" />, label: 'Tampered', tone: 'bg-destructive/10 text-destructive border-destructive/20' },
-  REVOKED: { icon: <ShieldX className="w-3.5 h-3.5" />, label: 'Revoked', tone: 'bg-destructive/10 text-destructive border-destructive/20' },
-  EXPIRED: { icon: <Clock className="w-3.5 h-3.5" />, label: 'Expired', tone: 'bg-accent/10 text-accent border-accent/20' },
+  VALID: { icon: <ShieldCheck className="w-3.5 h-3.5" />, label: 'Valid', tone: 'bg-primary/5 text-primary border-primary/30' },
+  TAMPERED: { icon: <ShieldAlert className="w-3.5 h-3.5" />, label: 'Tampered', tone: 'bg-destructive/5 text-destructive border-destructive/30' },
+  REVOKED: { icon: <ShieldX className="w-3.5 h-3.5" />, label: 'Revoked', tone: 'bg-destructive/5 text-destructive border-destructive/30' },
+  EXPIRED: { icon: <Clock className="w-3.5 h-3.5" />, label: 'Expired', tone: 'bg-accent/5 text-accent border-accent/30' },
   NOT_FOUND: { icon: <FileQuestion className="w-3.5 h-3.5" />, label: 'Not Found', tone: 'bg-muted/40 text-muted-foreground border-border' },
   UNAVAILABLE: { icon: <WifiOff className="w-3.5 h-3.5" />, label: 'Unavailable', tone: 'bg-muted/40 text-muted-foreground border-border' },
 };
@@ -18,7 +18,7 @@ const SEAL_CHIP: Record<VerificationStatus, { icon: React.ReactNode; label: stri
 const ResultSealChip: React.FC<{ status: VerificationStatus }> = ({ status }) => {
   const s = SEAL_CHIP[status] || SEAL_CHIP.NOT_FOUND;
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${s.tone}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${s.tone}`} role="status" aria-label={s.label}>
       {s.icon}
       <span>{s.label}</span>
     </span>
@@ -64,7 +64,7 @@ export const VerificationsAuditTable: React.FC<VerificationsAuditTableProps> = (
       sortable: true,
       accessor: (row) => (
         <span className="font-mono font-medium text-xs text-foreground tabular-nums">
-          {row.credentialNumber || '—'}
+          {row.credentialNumber || 'Unknown'}
         </span>
       ),
     },
