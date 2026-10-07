@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { issuerApi } from '../lib/api';
 import { AppShell } from '../components/layout/AppShell';
@@ -24,9 +25,34 @@ import type { IssuerCredential } from '../types';
 
 type IssuerTab = 'onboarding' | 'credentials' | 'issue' | 'keys' | 'activity';
 
+const tabFromPath = (pathname: string): IssuerTab => {
+  const seg = pathname.replace(/^\/issuer\/?/, '');
+  if (seg === 'credentials/new') return 'issue';
+  if (seg === 'credentials') return 'credentials';
+  if (seg === 'keys') return 'keys';
+  if (seg === 'verifications') return 'activity';
+  return 'onboarding';
+};
+
+const pathFromTab = (tab: IssuerTab): string =>
+  tab === 'onboarding'
+    ? '/issuer'
+    : tab === 'issue'
+      ? '/issuer/credentials/new'
+      : tab === 'activity'
+        ? '/issuer/verifications'
+        : `/issuer/${tab}`;
+
 export const IssuerLanding: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<IssuerTab>('onboarding');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<IssuerTab>(() => tabFromPath(location.pathname));
   const [selectedCredential, setSelectedCredential] = useState<IssuerCredential | null>(null);
+
+  // Sidebar links point at these subpaths, so the tab follows the URL.
+  React.useEffect(() => {
+    setActiveTab(tabFromPath(location.pathname));
+  }, [location.pathname]);
 
   // Fetch Issuer Profile with skeleton loading
   const {
@@ -90,10 +116,11 @@ export const IssuerLanding: React.FC = () => {
   const handleTabChange = useCallback((v: string) => {
     const tab = v as IssuerTab;
     setActiveTab(tab);
+    navigate(pathFromTab(tab));
     if (tab === 'activity') {
       refetchVerifications();
     }
-  }, [refetchVerifications]);
+  }, [navigate, refetchVerifications]);
 
   // Credential Table Columns (inside component to access setSelectedCredential)
   const credentialColumns: Column<IssuerCredential>[] = [
@@ -242,7 +269,7 @@ export const IssuerLanding: React.FC = () => {
                 searchPlaceholder="Search credentials by title, number, or recipient..."
                 emptyMessage="Nothing issued yet. Issue your first certificate from the Issue tab."
                 emptyActionLabel="Issue Certificate"
-                onEmptyAction={() => setActiveTab('issue')}
+                onEmptyAction={() => handleTabChange('issue')}
                 searchFilter={(c, q) =>
                   c.title.toLowerCase().includes(q) ||
                   c.credentialNumber.toLowerCase().includes(q) ||
