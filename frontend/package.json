@@ -35,8 +35,6 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@reticlehq/react": "^3.5.0",
-    "@reticlehq/vite-plugin": "^3.5.0",
     "@types/node": "^24.19.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
