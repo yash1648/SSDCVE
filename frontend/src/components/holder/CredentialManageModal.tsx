@@ -308,7 +308,7 @@ export const CredentialManageModal: React.FC<CredentialManageModalProps> = ({
                       <Button
                         size="sm"
                         data-claim-toggle={key}
-                        variant={isHidden ? 'outline' : 'secondary'}
+                        variant={isHidden ? 'outline' : 'default'}
                         onClick={() => handleToggleClaim(key)}
                         disabled={savingDisclosure}
                         className="gap-1.5 text-xs h-8"

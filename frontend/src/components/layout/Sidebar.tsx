@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import {
   ShieldCheck,
@@ -23,9 +23,36 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
-  const { user } = useAuth();
-  const role = user?.role;
+  const { user, role: ctxRole } = useAuth();
+  const role = ctxRole || user?.role;
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+
+  // Show the portal matching the current route (an ADMIN can visit every
+  // portal, so role alone picks the wrong section). Fall back to the
+  // user's own portal when the route is not portal-specific.
+  const path = location.pathname;
+  const activePortal: 'admin' | 'issuer' | 'holder' | 'verifier' | null =
+    path.startsWith('/admin')
+      ? 'admin'
+      : path.startsWith('/issuer')
+        ? 'issuer'
+        : path.startsWith('/holder')
+          ? 'holder'
+          : path.startsWith('/verifier')
+            ? 'verifier'
+            : null;
+  const portal =
+    activePortal ||
+    (role === 'ADMIN'
+      ? 'admin'
+      : role === 'ISSUER'
+        ? 'issuer'
+        : role === 'HOLDER'
+          ? 'holder'
+          : role === 'VERIFIER'
+            ? 'verifier'
+            : null);
 
   const navItemClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors border-l-[3px] rounded-r-lg ${
@@ -94,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           </NavLink>
         </div>
         {/* Role Specific Nav */}
-        {role === 'ADMIN' && (
+        {portal === 'admin' && role === 'ADMIN' && (
           <div className="space-y-1 pt-2 border-t border-border/60">
             {sectionLabel('Admin Console')}
             <NavLink to="/admin" end title="Dashboard" className={navItemClass} onClick={onCloseMobile}>
@@ -116,7 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           </div>
         )}
 
-        {role === 'ISSUER' && (
+        {portal === 'issuer' && (role === 'ISSUER' || role === 'ADMIN') && (
           <div className="space-y-1 pt-2 border-t border-border/60">
             {sectionLabel('Issuer Portal')}
             <NavLink to="/issuer" end title="Overview" className={navItemClass} onClick={onCloseMobile}>
@@ -142,7 +169,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           </div>
         )}
 
-        {role === 'HOLDER' && (
+        {portal === 'holder' && (role === 'HOLDER' || role === 'ADMIN') && (
           <div className="space-y-1 pt-2 border-t border-border/60">
             {sectionLabel('Student Wallet')}
             <NavLink to="/holder" end title="My Credentials" className={navItemClass} onClick={onCloseMobile}>
@@ -152,7 +179,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
           </div>
         )}
 
-        {role === 'VERIFIER' && (
+        {portal === 'verifier' && (role === 'VERIFIER' || role === 'ADMIN') && (
           <div className="space-y-1 pt-2 border-t border-border/60">
             {sectionLabel('Verifier Portal')}
             <NavLink to="/verifier" end title="Dashboard" className={navItemClass} onClick={onCloseMobile}>

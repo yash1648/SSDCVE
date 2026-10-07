@@ -279,7 +279,7 @@ export const HolderLanding: React.FC = () => {
                   <div className="space-y-2 pt-3 border-t border-border/60">
                     <div className="grid grid-cols-3 gap-1.5">
                       <Button
-                        variant="secondary"
+                        variant="outline"
                         size="sm"
                         onClick={() => setManageTarget({ cred: c, tab: 'privacy' })}
                         className="text-xs h-8 px-2 gap-1"
@@ -288,7 +288,7 @@ export const HolderLanding: React.FC = () => {
                         Selective Disclosure
                       </Button>
                       <Button
-                        variant="secondary"
+                        variant="outline"
                         size="sm"
                         onClick={() => setManageTarget({ cred: c, tab: 'share' })}
                         className="text-xs h-8 px-2 gap-1"
@@ -297,7 +297,7 @@ export const HolderLanding: React.FC = () => {
                         Share
                       </Button>
                       <Button
-                        variant="secondary"
+                        variant="outline"
                         size="sm"
                         onClick={() => setManageTarget({ cred: c, tab: 'download' })}
                         className="text-xs h-8 px-2 gap-1 font-semibold"
