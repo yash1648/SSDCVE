@@ -20,13 +20,18 @@ import {
   Download,
   Lock,
   Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { WalletCredential } from '../types';
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const HolderLanding: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [addCredentialInput, setAddCredentialInput] = useState('');
+  const [addError, setAddError] = useState<string | null>(null);
   // Shared wallet links prefill the add field; adding always needs a click.
   useEffect(() => {
     const add = searchParams.get('add');
@@ -73,9 +78,16 @@ export const HolderLanding: React.FC = () => {
 
   const handleAddById = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    setAddError(null);
+
     const trimmed = addCredentialInput.trim();
     if (!trimmed) {
-      toast.warning('Please enter the credential ID shared by your institution.');
+      setAddError('Please enter the credential ID shared by your institution.');
+      return;
+    }
+
+    if (!UUID_REGEX.test(trimmed)) {
+      setAddError('Credential ID must be a valid UUID.');
       return;
     }
 
@@ -86,7 +98,7 @@ export const HolderLanding: React.FC = () => {
       setAddCredentialInput('');
       refetch();
     } catch {
-      toast.error('Could not add it. Check the ID and try again.');
+      setAddError('Could not add it. Check the ID and try again.');
     } finally {
       setIsAddingWallet(false);
     }
@@ -114,8 +126,15 @@ export const HolderLanding: React.FC = () => {
               disabled={isFetching}
               className="gap-2 h-9"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
-              Refresh
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`}
+                aria-hidden="true"
+              />
+              {isFetching ? (
+                <span className="w-16 h-4 bg-muted animate-pulse rounded" />
+              ) : (
+                'Refresh'
+              )}
             </Button>
           </div>
         </div>
@@ -129,8 +148,12 @@ export const HolderLanding: React.FC = () => {
             <Input
               placeholder="Enter the credential ID shared by your institution…"
               value={addCredentialInput}
-              onChange={(e) => setAddCredentialInput(e.target.value)}
+              onChange={(e) => {
+                setAddCredentialInput(e.target.value);
+                if (addError) setAddError(null);
+              }}
               className="font-mono text-xs flex-1"
+              aria-describedby={addError ? 'add-error' : undefined}
             />
             <Button
               type="submit"
@@ -145,6 +168,12 @@ export const HolderLanding: React.FC = () => {
               Add to Wallet
             </Button>
           </form>
+          {addError && (
+            <div id="add-error" role="alert" className="flex items-center gap-1.5 text-xs text-destructive">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{addError}</span>
+            </div>
+          )}
         </div>
 
         {/* Filter Bar */}
@@ -175,13 +204,20 @@ export const HolderLanding: React.FC = () => {
 
         {/* Cards Section */}
         {isLoading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" aria-busy="true" aria-label="Loading credentials">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse h-48 rounded-2xl border border-border bg-muted/30" />
+              <div key={i} className="animate-pulse h-56 rounded-2xl border border-border bg-card p-5 space-y-4">
+                <div className="h-4 w-1/3 bg-muted rounded" />
+                <div className="h-4 w-1/2 bg-muted rounded" />
+                <div className="h-3 w-full bg-muted rounded" />
+                <div className="h-3 w-3/4 bg-muted rounded" />
+                <div className="h-3 w-full bg-muted rounded" />
+                <div className="h-3 w-full bg-muted rounded" />
+                <div className="h-8 w-full bg-muted rounded" />
+              </div>
             ))}
           </div>
         ) : credentials.length === 0 ? (
-          /* Empty state proof */
           <div className="rounded-2xl border border-dashed border-border p-12 text-center bg-card space-y-3">
             <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
               <Wallet className="w-6 h-6" />
@@ -277,7 +313,7 @@ export const HolderLanding: React.FC = () => {
                           onClick={() =>
                             setConfirmingRemoveId((prev) => ({ ...prev, [c.credentialId]: true }))
                           }
-                          className="w-full text-muted-foreground hover:text-rose-600 text-xs h-7 gap-1.5"
+                          className="w-full text-muted-foreground hover:text-destructive text-xs h-7 gap-1.5"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           Remove from wallet
