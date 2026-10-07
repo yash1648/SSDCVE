@@ -436,7 +436,7 @@ export const IssueCredentialWizard: React.FC<IssueCredentialWizardProps> = ({
                   onChange={(e) =>
                     handleUpdateClaim(claim.id, 'type', e.target.value as any)
                   }
-                  className="h-9 text-xs bg-background border border-border rounded-md px-2 text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="h-9 text-xs bg-background border border-border rounded-md px-2 text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
                   <option value="string">String</option>
                   <option value="number">Number</option>

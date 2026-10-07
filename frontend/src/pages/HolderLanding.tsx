@@ -5,6 +5,7 @@ import { holderApi } from '../lib/api';
 import { AppShell } from '../components/layout/AppShell';
 import { CredentialManageModal } from '../components/holder/CredentialManageModal';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { EmptyState } from '../components/common/EmptyState';
 import { HashDisplay } from '../components/common/HashDisplay';
 import { DateTime } from '../components/common/DateTime';
 import { Button } from '../components/ui/button';
@@ -154,6 +155,7 @@ export const HolderLanding: React.FC = () => {
               }}
               className="font-mono text-xs flex-1"
               aria-describedby={addError ? 'add-error' : undefined}
+              aria-invalid={!!addError}
             />
             <Button
               type="submit"
@@ -218,15 +220,16 @@ export const HolderLanding: React.FC = () => {
             ))}
           </div>
         ) : credentials.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border p-12 text-center bg-card space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
-              <Wallet className="w-6 h-6" />
-            </div>
-            <h3 className="text-lg font-bold text-foreground">No Credentials Yet</h3>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              No credentials yet. Ask your institution to issue one, or add it below with its credential ID.
-            </p>
-          </div>
+          <EmptyState
+            icon={Wallet}
+            title="No Credentials Yet"
+            description="No credentials yet. Ask your institution to issue one, or add it below with its credential ID."
+            actionLabel="Add Credential"
+            onAction={() => {
+              const input = document.querySelector<HTMLInputElement>('input[placeholder*="credential ID"]');
+              input?.focus();
+            }}
+          />
         ) : (
           <div className="space-y-4">
             <h3 className="text-base font-bold text-foreground">My Credential Cards</h3>

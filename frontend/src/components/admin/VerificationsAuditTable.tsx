@@ -109,7 +109,7 @@ export const VerificationsAuditTable: React.FC<VerificationsAuditTableProps> = (
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-8 text-xs bg-background border border-border rounded-lg px-2.5 text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            className="h-8 text-xs bg-background border border-border rounded-lg px-2.5 text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             {statuses.map((s) => (
               <option key={s} value={s}>

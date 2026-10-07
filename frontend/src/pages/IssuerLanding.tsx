@@ -241,6 +241,8 @@ export const IssuerLanding: React.FC = () => {
                 isLoading={fetchingCredentials && credentials.length === 0}
                 searchPlaceholder="Search credentials by title, number, or recipient..."
                 emptyMessage="Nothing issued yet. Issue your first certificate from the Issue tab."
+                emptyActionLabel="Issue Certificate"
+                onEmptyAction={() => setActiveTab('issue')}
                 searchFilter={(c, q) =>
                   c.title.toLowerCase().includes(q) ||
                   c.credentialNumber.toLowerCase().includes(q) ||

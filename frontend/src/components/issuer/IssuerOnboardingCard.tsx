@@ -37,6 +37,7 @@ export const IssuerOnboardingCard: React.FC<IssuerOnboardingCardProps> = ({
   } = useForm<OrgFormData>({
     resolver: zodResolver(orgSchema),
     defaultValues: { name: '', domain: '' },
+    mode: 'onBlur',
   });
 
   const onSubmit = async (data: OrgFormData) => {

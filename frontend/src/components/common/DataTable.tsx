@@ -18,6 +18,8 @@ export interface Column<T> {
   accessor?: (item: T) => React.ReactNode;
   sortable?: boolean;
   className?: string;
+  // Mobile card layout: render function for card view (shown on mobile)
+  renderCard?: (item: T) => React.ReactNode;
 }
 
 interface DataTableProps<T> {
@@ -27,9 +29,13 @@ interface DataTableProps<T> {
   searchFilter?: (item: T, query: string) => boolean;
   pageSize?: number;
   emptyMessage?: string;
+  emptyActionLabel?: string;
+  onEmptyAction?: () => void;
   className?: string;
   onRowClick?: (item: T) => void;
   isLoading?: boolean;
+  // Enable mobile card layout fallback (default: true)
+  mobileCards?: boolean;
 }
 
 export function DataTable<T>({
@@ -39,9 +45,12 @@ export function DataTable<T>({
   searchFilter,
   pageSize = 10,
   emptyMessage = 'No records found.',
+  emptyActionLabel,
+  onEmptyAction,
   className = '',
   onRowClick,
   isLoading = false,
+  mobileCards = true,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -149,9 +158,14 @@ export function DataTable<T>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-32 text-center text-sm text-muted-foreground"
+                  className="h-32 text-center text-sm text-muted-foreground flex flex-col items-center justify-center gap-3"
                 >
-                  {emptyMessage}
+                  <span>{emptyMessage}</span>
+                  {emptyActionLabel && onEmptyAction && (
+                    <Button variant="outline" size="sm" onClick={onEmptyAction} className="gap-2">
+                      {emptyActionLabel}
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ) : (
@@ -174,6 +188,43 @@ export function DataTable<T>({
           </TableBody>
         </Table>
       </div>
+
+      {/* Mobile card layout fallback */}
+      {mobileCards && columns.some((c) => c.renderCard) && (
+        <div className="md:hidden space-y-3">
+          {isLoading ? (
+            [0, 1, 2].map((row) => (
+              <div key={`skeleton-card-${row}`} className="rounded-xl border border-border bg-card p-4 space-y-2 animate-pulse">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            ))
+          ) : paginatedData.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border p-8 text-center bg-card space-y-3">
+              <div className="text-muted-foreground">{emptyMessage}</div>
+              {emptyActionLabel && onEmptyAction && (
+                <Button variant="outline" size="sm" onClick={onEmptyAction} className="gap-2 mx-auto">
+                  {emptyActionLabel}
+                </Button>
+              )}
+            </div>
+          ) : (
+            paginatedData.map((item, index) => (
+              <div
+                key={(item as any).id || (item as any).credentialNumber || index}
+                className="rounded-xl border border-border bg-card p-4 space-y-2"
+                onClick={() => onRowClick && onRowClick(item)}
+                style={{ cursor: onRowClick ? 'pointer' : 'default' }}
+              >
+                {columns
+                  .filter((c) => c.renderCard)
+                  .map((col) => col.renderCard!(item))}
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-2 pt-2 text-xs text-muted-foreground">

@@ -41,6 +41,7 @@ export const RegisterPage: React.FC = () => {
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: { fullName: '', email: '', password: '' },
+    mode: 'onBlur',
   });
 
   const passwordValue = watch('password') || '';
@@ -138,9 +139,11 @@ export const RegisterPage: React.FC = () => {
                 type="text"
                 placeholder="Dr. Elena Rostova"
                 autoComplete="name"
+                aria-describedby={errors.fullName ? 'fullName-error' : undefined}
+                aria-invalid={!!errors.fullName}
                 {...register('fullName')}
               />
-              {errors.fullName && <p role="alert" className="text-xs text-destructive">{errors.fullName.message}</p>}
+              {errors.fullName && <p id="fullName-error" role="alert" className="text-xs text-destructive">{errors.fullName.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -150,9 +153,11 @@ export const RegisterPage: React.FC = () => {
                 type="email"
                 placeholder="elena@university.edu"
                 autoComplete="email"
+                aria-describedby={errors.email ? 'email-error' : undefined}
+                aria-invalid={!!errors.email}
                 {...register('email')}
               />
-              {errors.email && <p role="alert" className="text-xs text-destructive">{errors.email.message}</p>}
+              {errors.email && <p id="email-error" role="alert" className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -162,9 +167,11 @@ export const RegisterPage: React.FC = () => {
                 type="password"
                 placeholder="••••••••••••"
                 autoComplete="new-password"
+                aria-describedby={errors.password ? 'password-error' : undefined}
+                aria-invalid={!!errors.password}
                 {...register('password')}
               />
-              {errors.password && <p role="alert" className="text-xs text-destructive">{errors.password.message}</p>}
+              {errors.password && <p id="password-error" role="alert" className="text-xs text-destructive">{errors.password.message}</p>}
 
               {/* Password Strength Meter */}
               {passwordValue && (
