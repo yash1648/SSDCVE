@@ -65,6 +65,7 @@ export const IssuerLanding: React.FC = () => {
   const {
     data: verifications = [],
     isFetching: fetchingVerifications,
+    refetch: refetchVerifications,
   } = useQuery({
     queryKey: ['issuer-verifications'],
     queryFn: issuerApi.getVerifications,
@@ -79,11 +80,20 @@ export const IssuerLanding: React.FC = () => {
 
   const handleRefetchCredentials = useCallback(() => {
     refetchCredentials();
-  }, [refetchCredentials]);
+    refetchVerifications();
+  }, [refetchCredentials, refetchVerifications]);
 
   const handleCredentialRowClick = useCallback((credential: IssuerCredential) => {
     issuerApi.getCredential(credential.id).then(setSelectedCredential);
   }, []);
+
+  const handleTabChange = useCallback((v: string) => {
+    const tab = v as IssuerTab;
+    setActiveTab(tab);
+    if (tab === 'activity') {
+      refetchVerifications();
+    }
+  }, [refetchVerifications]);
 
   // Credential Table Columns (inside component to access setSelectedCredential)
   const credentialColumns: Column<IssuerCredential>[] = [
@@ -195,7 +205,7 @@ export const IssuerLanding: React.FC = () => {
       <div className="space-y-6">
         <Tabs
           value={activeTab}
-          onValueChange={(v) => setActiveTab(v as IssuerTab)}
+          onValueChange={handleTabChange}
           className="space-y-6"
         >
           <TabsList className="bg-muted/70 p-1 rounded-xl">
@@ -270,10 +280,7 @@ export const IssuerLanding: React.FC = () => {
         {selectedCredential && (
           <IssuerCredentialDetail
             credential={selectedCredential}
-            onRefresh={() => {
-              refetchCredentials();
-              issuerApi.getCredential(selectedCredential.id).then(setSelectedCredential);
-            }}
+            onRefresh={handleRefetchCredentials}
             onClose={() => setSelectedCredential(null)}
           />
         )}
