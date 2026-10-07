@@ -12,7 +12,6 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { DateTime } from '../components/common/DateTime';
 import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
 import {
   FileText,
@@ -82,6 +81,10 @@ export const IssuerLanding: React.FC = () => {
     refetchCredentials();
   }, [refetchCredentials]);
 
+  const handleCredentialRowClick = useCallback((credential: IssuerCredential) => {
+    issuerApi.getCredential(credential.id).then(setSelectedCredential);
+  }, []);
+
   // Credential Table Columns (inside component to access setSelectedCredential)
   const credentialColumns: Column<IssuerCredential>[] = [
     {
@@ -137,23 +140,6 @@ export const IssuerLanding: React.FC = () => {
       header: 'Issued At',
       sortable: true,
       accessor: (c) => <DateTime value={c.issuedAt} />,
-    },
-    {
-      key: 'actions',
-      header: '',
-      className: 'text-right',
-      accessor: (c) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            issuerApi.getCredential(c.id).then(setSelectedCredential).catch(() => setSelectedCredential(c));
-          }}
-          className="text-xs h-7 px-2"
-        >
-          View Details
-        </Button>
-      ),
     },
   ];
 
@@ -250,6 +236,7 @@ export const IssuerLanding: React.FC = () => {
                   c.credentialNumber.toLowerCase().includes(q) ||
                   c.subjectName.toLowerCase().includes(q)
                 }
+                onRowClick={handleCredentialRowClick}
               />
             </TabsContent>
           )}
