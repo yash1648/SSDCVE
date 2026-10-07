@@ -31,3 +31,7 @@ CLAUDE.md
 RETICLE.md
 .claude/
 .opencode/
+
+# Reticle verification state — machine-local, not for GitHub
+.reticle/
+.reticle.json
